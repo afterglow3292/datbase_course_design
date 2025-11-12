@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>港口物流管理系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="dashboard-theme">
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⚓</span>
+            <div>
+                <div class="brand-title">港口物流</div>
+                <div class="brand-sub">Port Logistics</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="index.html"><i class="bi bi-speedometer"></i> 总览</a>
+            <a class="nav-link active" href="ships.html"><i class="bi bi-ship"></i> 船舶管理</a>
+            <a class="nav-link" href="cargo.html"><i class="bi bi-box-seam"></i> 货物管理</a>
+            <a class="nav-link" href="berths.html"><i class="bi bi-calendar-event"></i> 泊位排程</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p class="small text-white-50 mb-1">操作中心</p>
+            <div class="badge bg-success-subtle text-success">船舶管理模块</div>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header mb-4">
+            <div>
+                <p class="text-uppercase small text-secondary mb-1">Ship Management</p>
+                <h1 class="h3 fw-bold mb-2">船舶管理中心</h1>
+                <p class="text-muted mb-0">按船型筛选、创建、更新与退役船舶信息，支撑业务课程实验。</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#filterPanel">
+                    <i class="bi bi-funnel"></i> 高级筛选
+                </button>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createShipModal">
+                    <i class="bi bi-plus"></i> 新增船舶
+                </button>
+            </div>
+        </header>
+
+        <section class="section-block mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="dashboard-card card p-3">
+                        <span class="stat-label">总船舶数</span>
+                        <p class="stat-number mb-1">62</p>
+                        <span class="text-muted small">本月新增 4 艘</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dashboard-card card p-3">
+                        <span class="stat-label">在港/在航</span>
+                        <p class="stat-number mb-1">18 / 32</p>
+                        <span class="text-muted small">其余 12 艘维护中</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="dashboard-card card p-3">
+                        <span class="stat-label">平均容量</span>
+                        <p class="stat-number mb-1">12,500 TEU</p>
+                        <span class="text-muted small">集装箱船占比 65%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-block" id="ships">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">船舶档案</h2>
+                    <p class="text-muted mb-0">支持条件筛选、批量导出与 CRUD 操作</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <input type="search" class="form-control form-control-sm" placeholder="搜索船名 / IMO"
+                           style="width: 180px;">
+                    <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-repeat"></i> 刷新</button>
+                </div>
+            </div>
+            <div class="card-table">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="shipManagementTable">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>船名</th>
+                            <th>IMO</th>
+                            <th>船型</th>
+                            <th>容量 (TEU)</th>
+                            <th>状态</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="text-muted">1</td>
+                            <td class="fw-semibold">海洋之星</td>
+                            <td>IMO1234567</td>
+                            <td>集装箱</td>
+                            <td>20,000</td>
+                            <td><span class="badge bg-success-subtle text-success">已到港</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
+                                <button class="btn btn-sm btn-outline-danger">退役</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">2</td>
+                            <td class="fw-semibold">东方快车</td>
+                            <td>IMO2345678</td>
+                            <td>散货</td>
+                            <td>8,500</td>
+                            <td><span class="badge bg-warning-subtle text-warning">在航</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
+                                <button class="btn btn-sm btn-outline-danger">退役</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">3</td>
+                            <td class="fw-semibold">北方巨人</td>
+                            <td>IMO3456789</td>
+                            <td>油轮</td>
+                            <td>12,000</td>
+                            <td><span class="badge bg-info-subtle text-info">计划</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
+                                <button class="btn btn-sm btn-outline-danger">退役</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="filterPanel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">高级筛选</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form>
+            <div class="mb-3">
+                <label class="form-label">船型</label>
+                <select class="form-select">
+                    <option value="">全部</option>
+                    <option value="container">集装箱船</option>
+                    <option value="bulk">散货船</option>
+                    <option value="tanker">油轮</option>
+                    <option value="ro_ro">滚装船</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">状态</label>
+                <select class="form-select">
+                    <option value="">全部</option>
+                    <option value="ARRIVED">已到港</option>
+                    <option value="AT SEA">在航</option>
+                    <option value="SCHEDULED">计划中</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">容量 (TEU)</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" placeholder="最小">
+                    <span class="input-group-text">~</span>
+                    <input type="number" class="form-control" placeholder="最大">
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary w-100">应用筛选</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="createShipModal" tabindex="-1" aria-labelledby="createShipModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createShipModalLabel">新增船舶</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createShipForm">
+                    <div class="mb-3">
+                        <label class="form-label">船名</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">IMO 编号</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">船型</label>
+                            <select class="form-select">
+                                <option value="container">集装箱</option>
+                                <option value="bulk">散货</option>
+                                <option value="tanker">油轮</option>
+                                <option value="ro_ro">滚装</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">容量 (TEU)</label>
+                            <input type="number" class="form-control" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">状态</label>
+                            <select class="form-select">
+                                <option value="ARRIVED">已到港</option>
+                                <option value="AT SEA">在航</option>
+                                <option value="SCHEDULED">计划中</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-2">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editShipModal" tabindex="-1" aria-labelledby="editShipModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editShipModalLabel">编辑船舶</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editShipForm">
+                    <div class="mb-3">
+                        <label class="form-label">船名</label>
+                        <input type="text" class="form-control" value="海洋之星">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">IMO 编号</label>
+                            <input type="text" class="form-control" value="IMO1234567">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">船型</label>
+                            <select class="form-select">
+                                <option value="container" selected>集装箱</option>
+                                <option value="bulk">散货</option>
+                                <option value="tanker">油轮</option>
+                                <option value="ro_ro">滚装</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">容量 (TEU)</label>
+                            <input type="number" class="form-control" value="20000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">状态</label>
+                            <select class="form-select">
+                                <option value="ARRIVED" selected>已到港</option>
+                                <option value="AT SEA">在航</option>
+                                <option value="SCHEDULED">计划中</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-2">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-control" rows="2">内部编号：PL-001</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger">退役</button>
+                <button type="button" class="btn btn-primary">保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/ships.js"></script>
+</body>
+</html>

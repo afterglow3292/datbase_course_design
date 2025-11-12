@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,86 +9,80 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjIS6e66fH0s3rQQwAW1p6MO2q67f2YkN9c2IcALew+OrCXaRkfj" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/custom.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
-<body class="app-body text-body" style="font-family: 'Inter', sans-serif;">
-<div class="background-pattern" aria-hidden="true">
-    <div class="orb orb-one"></div>
-    <div class="orb orb-two"></div>
-    <div class="orb orb-three"></div>
-</div>
-
-<header class="hero-wrapper text-white">
-    <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-dark glass-nav shadow-lg">
-            <div class="brand-badge">
-                <span class="brand-icon">⚓</span>
-                <a class="navbar-brand fw-semibold" href="#">港口物流管理系统</a>
-            </div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav ms-auto nav-pill-group">
-                    <a class="nav-link active" href="#overview">总览</a>
-                    <a class="nav-link" href="#ships">船舶管理</a>
-                    <a class="nav-link" href="#cargo">货物管理</a>
-                    <a class="nav-link" href="#berths">泊位排程</a>
-        </nav>
-        <div class="hero-content text-center text-lg-start">
-         
-            <h1 class="display-5 fw-bold mb-3">港口物流管理系统</h1>
-            
-        </div>
-    </div>
-</header>
-
-<main class="container py-4 position-relative">
-    <section id="overview" class="mb-5">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <!--
+<body class="dashboard-theme">
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⚓</span>
             <div>
-                <h1 class="h3 mb-1">运行总览</h1>
-                <p class="text-muted mb-0">实时监控船舶到港、货物分配与泊位利用情况。</p>
-            </div>
-        -->
-            <div class="text-end small text-muted" id="lastUpdated">刚刚更新</div>
-        </div>
-        <div class="stats-grid">
-            <div class="card border-0 shadow-sm gradient-card stat-card gradient-1 text-white">
-                <div class="card-body">
-                    <h6 class="card-subtitle text-uppercase">在港船舶</h6>
-                    <h2 class="display-6 fw-bold" id="statShips">0</h2>
-                    <p class="card-text small opacity-75" id="statShipsDetail"></p>
-                </div>
-            </div>
-            <div class="card border-0 shadow-sm gradient-card stat-card gradient-2 text-white">
-                <div class="card-body">
-                    <h6 class="card-subtitle text-uppercase">待处理货物</h6>
-                    <h2 class="display-6 fw-bold" id="statCargo">0</h2>
-                    <p class="card-text small opacity-75" id="statCargoDetail"></p>
-                </div>
-            </div>
-            <div class="card border-0 shadow-sm gradient-card stat-card gradient-3 text-white">
-                <div class="card-body">
-                    <h6 class="card-subtitle text-uppercase">即将靠泊</h6>
-                    <h2 class="display-6 fw-bold" id="statBerths">0</h2>
-                    <p class="card-text small opacity-75" id="statBerthsDetail"></p>
-                </div>
+                <div class="brand-title">港口物流</div>
+                <div class="brand-sub">Port Logistics</div>
             </div>
         </div>
-    </section>
+        <nav class="sidebar-nav">
+            <a class="nav-link active" href="index.html"><i class="bi bi-speedometer"></i> 总览</a>
+            <a class="nav-link" href="ships.html"><i class="bi bi-ship"></i> 船舶管理</a>
+            <a class="nav-link" href="cargo.html"><i class="bi bi-box-seam"></i> 货物管理</a>
+            <a class="nav-link" href="berths.html"><i class="bi bi-calendar-event"></i> 泊位排程</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p class="small text-white-50 mb-1">系统状态</p>
+            <div class="badge bg-success-subtle text-success">在线</div>
+        </div>
+    </aside>
 
-    <section id="ships" class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">船舶动态</h2>
-            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerShipModal">
-                <i class="bi bi-plus-lg"></i> 新增船舶
-            </button>
-        </div>
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
+    <main class="dashboard-main">
+        <header class="dashboard-header" id="overview">
+            <div>
+                <p class="text-uppercase small text-secondary mb-1">实时掌控</p>
+                <h1 class="h3 fw-bold mb-2">港口物流管理系统</h1>
+            </div>
+            <div class="text-end"><span class="text-muted small" id="lastUpdated">刚刚更新</span></div>
+        </header>
+
+        <section class="stats-row">
+            <div class="stat-card gradient-1 text-white">
+                <div class="stat-label">在港船舶</div>
+                <div class="stat-value" id="statShips">0</div>
+                <p class="stat-desc" id="statShipsDetail"></p>
+            </div>
+            <div class="stat-card gradient-2 text-white">
+                <div class="stat-label">待处理货物</div>
+                <div class="stat-value" id="statCargo">0</div>
+                <p class="stat-desc" id="statCargoDetail"></p>
+            </div>
+            <div class="stat-card gradient-3 text-white">
+                <div class="stat-label">即将靠泊</div>
+                <div class="stat-value" id="statBerths">0</div>
+                <p class="stat-desc" id="statBerthsDetail"></p>
+            </div>
+        </section>
+
+        <section class="section-block mb-4">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">关键指标</h2>
+                    <p class="text-muted mb-0">ECharts 可视化展示月度吞吐趋势</p>
+                </div>
+            </div>
+            <div id="overviewChart" style="height: 320px;"></div>
+        </section>
+
+        <section class="section-block" id="ships">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">船舶动态</h2>
+                    <p class="text-muted mb-0">掌握所有船舶到港与在航状态</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="ships.html">
+                    <i class="bi bi-arrow-right"></i> 进入管理
+                </a>
+            </div>
+            <div class="card-table">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0" id="shipsTable">
                         <thead class="table-light">
@@ -104,18 +98,19 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="cargo" class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">货物队列</h2>
-            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assignCargoModal">
-                <i class="bi bi-box-arrow-in-right"></i> 分配货物
-            </button>
-        </div>
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
+        <section class="section-block" id="cargo">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">货物队列</h2>
+                    <p class="text-muted mb-0">实时掌握待装载货物</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="cargo.html">
+                    <i class="bi bi-arrow-right"></i> 进入管理
+                </a>
+            </div>
+            <div class="card-table">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0" id="cargoTable">
                         <thead class="table-light">
@@ -131,18 +126,19 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="berths" class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">泊位排程</h2>
-            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleBerthModal">
-                <i class="bi bi-calendar-event"></i> 安排泊位
-            </button>
-        </div>
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
+        <section class="section-block" id="berths">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">泊位排程</h2>
+                    <p class="text-muted mb-0">管理即将靠泊的计划</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href "berths.html">
+                    <i class="bi bi-arrow-right"></i> 进入管理
+                </a>
+            </div>
+            <div class="card-table">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0" id="berthTable">
                         <thead class="table-light">
@@ -159,11 +155,11 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </section>
-</main>
+        </section>
+    </main>
+</div>
 
-<!-- Ship Modal -->
+<!-- existing modals remain -->
 <div class="modal fade" id="registerShipModal" tabindex="-1" aria-labelledby="registerShipModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -205,7 +201,6 @@
     </div>
 </div>
 
-<!-- Cargo Modal -->
 <div class="modal fade" id="assignCargoModal" tabindex="-1" aria-labelledby="assignCargoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -243,7 +238,6 @@
     </div>
 </div>
 
-<!-- Berth Modal -->
 <div class="modal fade" id="scheduleBerthModal" tabindex="-1" aria-labelledby="scheduleBerthModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -294,7 +288,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.js"></script>
 <script src="js/app.js"></script>
+<script>
+    const chartDom = document.getElementById('overviewChart');
+    if (chartDom) {
+        const chart = echarts.init(chartDom);
+        chart.setOption({
+            title: { text: '月度吞吐趋势 (TEU)', left: 'center', textStyle: { fontWeight: 'bold', fontSize: 14 } },
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['集装箱', '散货'], top: 30 },
+            grid: { left: 50, right: 30, bottom: 40 },
+            xAxis: { type: 'category', data: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'] },
+            yAxis: { type: 'value', name: '万 TEU' },
+            series: [
+                { name: '集装箱', type: 'line', data: [45,52,48,60,65,70,75,80,78,85,90,95], smooth: true, areaStyle: { opacity: 0.1 }, color: '#5b6bff' },
+                { name: '散货', type: 'line', data: [30,32,31,34,36,38,40,41,42,44,45,47], smooth: true, areaStyle: { opacity: 0.1 }, color: '#1f9d88' }
+            ]
+        });
+    }
+</script>
 </body>
 </html>
