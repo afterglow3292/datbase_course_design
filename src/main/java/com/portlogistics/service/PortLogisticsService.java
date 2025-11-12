@@ -1,4 +1,5 @@
 package com.portlogistics.service;
+import org.springframework.stereotype.Service;
 
 import com.portlogistics.model.BerthSchedule;
 import com.portlogistics.model.Cargo;
@@ -10,15 +11,16 @@ import com.portlogistics.repository.ShipRepository;
 import java.sql.SQLException;
 import java.util.List;
 
+@Service
 public class PortLogisticsService {
     private final ShipRepository shipRepository;
     private final CargoRepository cargoRepository;
     private final BerthScheduleRepository berthScheduleRepository;
 
-    public PortLogisticsService() {
-        this.shipRepository = new ShipRepository();
-        this.cargoRepository = new CargoRepository();
-        this.berthScheduleRepository = new BerthScheduleRepository();
+    public PortLogisticsService(ShipRepository shipRepository,CargoRepository cargoRepository,BerthScheduleRepository berthScheduleRepository) {
+        this.shipRepository = shipRepository;
+        this.cargoRepository = cargoRepository;
+        this.berthScheduleRepository = berthScheduleRepository;
     }
 
     public List<Ship> listShips() throws SQLException {

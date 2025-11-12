@@ -1,5 +1,5 @@
 package com.portlogistics.repository;
-
+import org.springframework.stereotype.Repository;
 import com.portlogistics.config.DatabaseManager;
 import com.portlogistics.model.Ship;
 
@@ -11,14 +11,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class ShipRepository {
+    private final DatabaseManager databaseManager;
     private static final String SELECT_ALL = "SELECT ship_id, name, imo, capacity_teu, status FROM ship ORDER BY ship_id";
     private static final String INSERT = "INSERT INTO ship (name, imo, capacity_teu, status) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_STATUS = "UPDATE ship SET status = ? WHERE ship_id = ?";
-
+    
+    public ShipRepository(DatabaseManager databaseManager){
+        this.databaseManager=databaseManager;
+    }
     public List<Ship> findAll() throws SQLException {
         List<Ship> ships = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SELECT_ALL);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -29,7 +34,7 @@ public class ShipRepository {
     }
 
     public void save(Ship ship) throws SQLException {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, ship.getName());
             statement.setString(2, ship.getImo());
@@ -40,7 +45,7 @@ public class ShipRepository {
     }
 
     public void updateStatus(int shipId, String status) throws SQLException {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(UPDATE_STATUS)) {
             statement.setString(1, status);
             statement.setInt(2, shipId);

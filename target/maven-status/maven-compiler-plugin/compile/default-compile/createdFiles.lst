@@ -1,7 +1,6 @@
-com\portlogistics\service\PortLogisticsService.class
-com\portlogistics\App.class
-com\portlogistics\repository\ShipRepository.class
 com\portlogistics\repository\CargoRepository.class
+com\portlogistics\service\PortLogisticsService.class
+com\portlogistics\repository\ShipRepository.class
 com\portlogistics\model\Cargo.class
 com\portlogistics\model\Ship.class
 com\portlogistics\model\BerthSchedule.class

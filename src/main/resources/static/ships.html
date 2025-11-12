@@ -50,31 +50,8 @@
             </div>
         </header>
 
-        <section class="section-block mb-4">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">总船舶数</span>
-                        <p class="stat-number mb-1">62</p>
-                        <span class="text-muted small">本月新增 4 艘</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">在港/在航</span>
-                        <p class="stat-number mb-1">18 / 32</p>
-                        <span class="text-muted small">其余 12 艘维护中</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">平均容量</span>
-                        <p class="stat-number mb-1">12,500 TEU</p>
-                        <span class="text-muted small">集装箱船占比 65%</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- 预留统计区域（可通过前端脚本填充） -->
+        <section class="section-block mb-4 d-none" id="shipStatsSection"></section>
 
         <section class="section-block" id="ships">
             <div class="section-heading">
@@ -197,46 +174,42 @@
                 <form id="createShipForm">
                     <div class="mb-3">
                         <label class="form-label">船名</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" class="form-control" id="createShipName" name="name" required>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">IMO 编号</label>
-                            <input type="text" class="form-control" required>
+                            <input type="text" class="form-control" id="createShipImo" name="imo" required>
                         </div>
-                        <div class="col-md-6">
+                        <!-- <div class="col-md-6">
                             <label class="form-label">船型</label>
-                            <select class="form-select">
+                            <select class="form-select" id="createShipType" name="type">
                                 <option value="container">集装箱</option>
                                 <option value="bulk">散货</option>
                                 <option value="tanker">油轮</option>
                                 <option value="ro_ro">滚装</option>
                             </select>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <label class="form-label">容量 (TEU)</label>
-                            <input type="number" class="form-control" min="0" required>
+                            <input type="number" class="form-control" id="createShipCapacity" name="capacityTeu" min="0" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">状态</label>
-                            <select class="form-select">
+                            <select class="form-select" id="createShipStatus" name="status">
                                 <option value="ARRIVED">已到港</option>
                                 <option value="AT SEA">在航</option>
                                 <option value="SCHEDULED">计划中</option>
                             </select>
                         </div>
                     </div>
-                    <div class="mb-3 mt-2">
-                        <label class="form-label">备注</label>
-                        <textarea class="form-control" rows="2"></textarea>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary">保存</button>
+                <button type="submit" class="btn btn-primary">保存</button>
             </div>
         </div>
     </div>
@@ -262,12 +235,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">船型</label>
-                            <select class="form-select">
+                            <!-- <select class="form-select">
                                 <option value="container" selected>集装箱</option>
                                 <option value="bulk">散货</option>
                                 <option value="tanker">油轮</option>
                                 <option value="ro_ro">滚装</option>
-                            </select>
+                            </select> -->
                         </div>
                     </div>
                     <div class="row g-3 mt-1">
@@ -292,13 +265,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-danger">退役</button>
-                <button type="button" class="btn btn-primary">保存修改</button>
+                <button type="submit" class="btn btn-primary">保存修改</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/ships.js"></script>
+<script src="js/ships.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 package com.portlogistics.repository;
-
+import org.springframework.stereotype.Repository;
 import com.portlogistics.config.DatabaseManager;
 import com.portlogistics.model.BerthSchedule;
 
@@ -11,7 +11,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class BerthScheduleRepository {
+    private final DatabaseManager databaseManager;
+
+    public BerthScheduleRepository(DatabaseManager databaseManager){
+        this.databaseManager=databaseManager;
+    }
     private static final String INSERT =
             "INSERT INTO berth_schedule (ship_id, berth_number, arrival_time, departure_time, status) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -20,7 +26,7 @@ public class BerthScheduleRepository {
             "FROM berth_schedule ORDER BY arrival_time LIMIT 20";
 
     public void save(BerthSchedule schedule) throws SQLException {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT)) {
             statement.setInt(1, schedule.getShipId());
             statement.setString(2, schedule.getBerthNumber());
@@ -37,7 +43,7 @@ public class BerthScheduleRepository {
 
     public List<BerthSchedule> findUpcomingSchedules() throws SQLException {
         List<BerthSchedule> schedules = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SELECT_UPCOMING);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {

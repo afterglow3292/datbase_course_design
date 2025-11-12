@@ -1,5 +1,5 @@
 package com.portlogistics.repository;
-
+import org.springframework.stereotype.Repository;
 import com.portlogistics.config.DatabaseManager;
 import com.portlogistics.model.Cargo;
 
@@ -10,7 +10,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class CargoRepository {
+    private final DatabaseManager databaseManager;
+    public CargoRepository(DatabaseManager databaseManager){
+        this.databaseManager=databaseManager;
+    }
     private static final String SELECT_PENDING =
             "SELECT cargo_id, description, weight, destination, ship_id FROM cargo WHERE ship_id IS NULL ORDER BY cargo_id";
     private static final String INSERT =
@@ -19,7 +24,7 @@ public class CargoRepository {
 
     public List<Cargo> findPendingCargo() throws SQLException {
         List<Cargo> cargoList = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SELECT_PENDING);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -30,7 +35,7 @@ public class CargoRepository {
     }
 
     public void save(Cargo cargo) throws SQLException {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT)) {
             statement.setString(1, cargo.getDescription());
             statement.setDouble(2, cargo.getWeight());
@@ -40,7 +45,7 @@ public class CargoRepository {
     }
 
     public void assignToShip(int cargoId, int shipId) throws SQLException {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(ASSIGN)) {
             statement.setInt(1, shipId);
             statement.setInt(2, cargoId);
