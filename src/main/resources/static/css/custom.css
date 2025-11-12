@@ -49,7 +49,7 @@
 .hero-wrapper {
     position: relative;
     z-index: 1;
-    padding: 3rem 0 4.5rem;
+    padding: 2.25rem 0 2.5rem;
     background: linear-gradient(135deg, rgba(30, 36, 84, 0.95), rgba(20, 12, 52, 0.92));
     overflow: hidden;
 }
@@ -57,8 +57,8 @@
 .hero-wrapper::after {
     content: "";
     position: absolute;
-    inset: auto -20% -140px;
-    height: 220px;
+    inset: auto -25% -110px;
+    height: 160px;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 65%);
     filter: blur(40px);
 }
@@ -66,7 +66,7 @@
 .hero-content {
     position: relative;
     z-index: 2;
-    padding: 2.5rem 0 0.5rem;
+    padding: 1.5rem 0 0.25rem;
     max-width: 720px;
 }
 
@@ -76,19 +76,55 @@
     border-radius: 1.8rem;
     padding-inline: 1.5rem;
     backdrop-filter: blur(18px);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.brand-icon {
+    font-size: 1.15rem;
+}
+
+.nav-pill-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.35rem;
+    border-radius: 999px;
 }
 
 .navbar-dark .nav-link {
     color: rgba(255, 255, 255, 0.85);
     font-weight: 500;
-    margin-inline: 0.35rem;
+    padding: 0.35rem 1.15rem;
+    border-radius: 999px;
+    margin: 0;
     transition: opacity 0.2s ease;
+    position: relative;
 }
 
 .navbar-dark .nav-link:hover,
 .navbar-dark .nav-link.active {
     color: #fff;
+    background: rgba(255, 255, 255, 0.15);
     opacity: 1;
+}
+
+.nav-cta {
+    border-radius: 999px;
+    border-width: 1px;
+    padding-inline: 1.25rem;
 }
 
 .letter-space {
@@ -100,7 +136,7 @@
 }
 
 main {
-    margin-top: -60px;
+    margin-top: -20px;
     z-index: 2;
 }
 
@@ -160,6 +196,16 @@ main {
 .btn-primary {
     border-radius: 999px;
     padding-inline: 1.25rem;
+}
+
+ .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.stat-card {
+    min-height: 180px;
 }
 
 section > .card {

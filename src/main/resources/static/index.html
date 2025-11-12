@@ -21,22 +21,23 @@
 <header class="hero-wrapper text-white">
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-dark glass-nav shadow-lg">
-            <a class="navbar-brand fw-semibold" href="#">港口物流管理系统</a>
+            <div class="brand-badge">
+                <span class="brand-icon">⚓</span>
+                <a class="navbar-brand fw-semibold" href="#">港口物流管理系统</a>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#overview">总览</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#ships">船舶管理</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#cargo">货物管理</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#berths">泊位排程</a></li>
-                </ul>
-            </div>
+                <div class="navbar-nav ms-auto nav-pill-group">
+                    <a class="nav-link active" href="#overview">总览</a>
+                    <a class="nav-link" href="#ships">船舶管理</a>
+                    <a class="nav-link" href="#cargo">货物管理</a>
+                    <a class="nav-link" href="#berths">泊位排程</a>
         </nav>
         <div class="hero-content text-center text-lg-start">
-            <p class="text-uppercase small mb-2 letter-space">实时掌控</p>
+         
             <h1 class="display-5 fw-bold mb-3">港口物流管理系统</h1>
             
         </div>
@@ -46,38 +47,34 @@
 <main class="container py-4 position-relative">
     <section id="overview" class="mb-5">
         <div class="d-flex align-items-center justify-content-between mb-3">
+            <!--
             <div>
                 <h1 class="h3 mb-1">运行总览</h1>
                 <p class="text-muted mb-0">实时监控船舶到港、货物分配与泊位利用情况。</p>
             </div>
+        -->
             <div class="text-end small text-muted" id="lastUpdated">刚刚更新</div>
         </div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 gradient-card gradient-1 text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle text-uppercase">在港船舶</h6>
-                        <h2 class="display-6 fw-bold" id="statShips">0</h2>
-                        <p class="card-text small opacity-75" id="statShipsDetail"></p>
-                    </div>
+        <div class="stats-grid">
+            <div class="card border-0 shadow-sm gradient-card stat-card gradient-1 text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-uppercase">在港船舶</h6>
+                    <h2 class="display-6 fw-bold" id="statShips">0</h2>
+                    <p class="card-text small opacity-75" id="statShipsDetail"></p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 gradient-card gradient-2 text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle text-uppercase">待处理货物</h6>
-                        <h2 class="display-6 fw-bold" id="statCargo">0</h2>
-                        <p class="card-text small opacity-75" id="statCargoDetail"></p>
-                    </div>
+            <div class="card border-0 shadow-sm gradient-card stat-card gradient-2 text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-uppercase">待处理货物</h6>
+                    <h2 class="display-6 fw-bold" id="statCargo">0</h2>
+                    <p class="card-text small opacity-75" id="statCargoDetail"></p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 gradient-card gradient-3 text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle text-uppercase">即将靠泊</h6>
-                        <h2 class="display-6 fw-bold" id="statBerths">0</h2>
-                        <p class="card-text small opacity-75" id="statBerthsDetail"></p>
-                    </div>
+            <div class="card border-0 shadow-sm gradient-card stat-card gradient-3 text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle text-uppercase">即将靠泊</h6>
+                    <h2 class="display-6 fw-bold" id="statBerths">0</h2>
+                    <p class="card-text small opacity-75" id="statBerthsDetail"></p>
                 </div>
             </div>
         </div>
