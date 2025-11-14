@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>港口物流管理系统</title>
+    <title>港口物流管理系统 - 货物管理</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
             <div>
                 <p class="text-uppercase small text-secondary mb-1">Cargo Management</p>
                 <h1 class="h3 fw-bold mb-2">货物管理中心</h1>
-                <p class="text-muted mb-0">管理仓储、装载、目的地等信息，支持课程设计中的 CRUD 操作。</p>
+                <p class="text-muted mb-0">记录并分配到港货物</p>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-primary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#filterPanel">
@@ -50,42 +50,17 @@
             </div>
         </header>
 
-        <section class="section-block mb-4">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">待分配货物</span>
-                        <p class="stat-number mb-1">27</p>
-                        <span class="text-muted small">今日新增 6 条</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">平均重量</span>
-                        <p class="stat-number mb-1">8.3 吨</p>
-                        <span class="text-muted small">生鲜/冷链占 34%</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card card p-3">
-                        <span class="stat-label">目的地覆盖</span>
-                        <p class="stat-number mb-1">14 个港口</p>
-                        <span class="text-muted small">长三角/北美航线为主</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <section class="section-block mb-4 d-none" id="cargoStatsSection"></section>
 
         <section class="section-block" id="cargo">
             <div class="section-heading">
                 <div>
                     <h2 class="h5 mb-1">货物清单</h2>
-                    <p class="text-muted mb-0">支持目的地、重量、状态等条件筛选</p>
+                    <p class="text-muted mb-0">实时查看待分配与已分配货物</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <input type="search" class="form-control form-control-sm" placeholder="搜索货物/目的地"
-                           style="width: 200px;">
-                    <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-repeat"></i> 刷新</button>
+                    <input type="search" class="form-control form-control-sm" placeholder="搜索货物/目的地" style="width: 200px;" disabled>
+                    <button class="btn btn-outline-secondary btn-sm" disabled><i class="bi bi-arrow-repeat"></i> 刷新</button>
                 </div>
             </div>
             <div class="card-table">
@@ -102,32 +77,7 @@
                             <th class="text-end">操作</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr>
-                            <td class="text-muted">1</td>
-                            <td class="fw-semibold">电子元器件 A</td>
-                            <td>4.5</td>
-                            <td>上海</td>
-                            <td>待分配</td>
-                            <td><span class="badge bg-warning-subtle text-warning">待分配</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCargoModal">编辑</button>
-                                <button class="btn btn-sm btn-outline-danger">删除</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">2</td>
-                            <td class="fw-semibold">汽车零部件</td>
-                            <td>7.8</td>
-                            <td>洛杉矶</td>
-                            <td>Evergreen Aurora</td>
-                            <td><span class="badge bg-success-subtle text-success">已分配</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCargoModal">编辑</button>
-                                <button class="btn btn-sm btn-outline-danger">删除</button>
-                            </td>
-                        </tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -141,29 +91,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form>
-            <div class="mb-3">
-                <label class="form-label">状态</label>
-                <select class="form-select">
-                    <option value="">全部</option>
-                    <option value="pending">待分配</option>
-                    <option value="assigned">已分配</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">目的地</label>
-                <input type="text" class="form-control" placeholder="如：上海">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">重量范围 (吨)</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" placeholder="最小">
-                    <span class="input-group-text">~</span>
-                    <input type="number" class="form-control" placeholder="最大">
-                </div>
-            </div>
-            <button type="button" class="btn btn-primary w-100">应用筛选</button>
-        </form>
+        <div class="text-muted small">筛选功能可在接入真实需求后实现。</div>
     </div>
 </div>
 
@@ -175,38 +103,32 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="createCargoForm">
                     <div class="mb-3">
                         <label class="form-label">货物描述</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" class="form-control" id="cargoDescription" name="description" required>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">重量 (吨)</label>
-                            <input type="number" class="form-control" step="0.1" required>
+                            <input type="number" class="form-control" id="cargoWeight" name="weight" step="0.1" min="0" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">目的地</label>
-                            <input type="text" class="form-control" required>
+                            <input type="text" class="form-control" id="cargoDestination" name="destination" required>
                         </div>
                     </div>
                     <div class="mb-3 mt-2">
                         <label class="form-label">分配至船舶</label>
-                        <select class="form-select">
+                        <select class="form-select" id="cargoShipSelect" name="shipId">
                             <option value="">暂不分配</option>
-                            <option value="1">#1 · 海洋之星</option>
-                            <option value="2">#2 · 东方快车</option>
                         </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">备注</label>
-                        <textarea class="form-control" rows="2"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary">保存</button>
+                <button type="submit" form="createCargoForm" class="btn btn-primary">保存</button>
             </div>
         </div>
     </div>
@@ -219,45 +141,17 @@
                 <h5 class="modal-title" id="editCargoModalLabel">编辑货物</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">货物描述</label>
-                        <input type="text" class="form-control" value="电子元器件 A">
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">重量 (吨)</label>
-                            <input type="number" class="form-control" value="4.5">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">目的地</label>
-                            <input type="text" class="form-control" value="上海">
-                        </div>
-                    </div>
-                    <div class="mb-3 mt-2">
-                        <label class="form-label">分配至船舶</label>
-                        <select class="form-select">
-                            <option value="">暂不分配</option>
-                            <option value="1" selected>#1 · 海洋之星</option>
-                            <option value="2">#2 · 东方快车</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">备注</label>
-                        <textarea class="form-control" rows="2">优先装载电子舱位</textarea>
-                    </div>
-                </form>
+            <div class="modal-body text-muted small">
+                详细编辑功能可在接入真实业务需求后实现。
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-danger">删除</button>
-                <button type="button" class="btn btn-primary">保存修改</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/cargo.js"></script>
+<script src="js/cargo.js" defer></script>
 </body>
 </html>

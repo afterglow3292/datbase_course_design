@@ -16,16 +16,16 @@ public class CargoRepository {
     public CargoRepository(DatabaseManager databaseManager){
         this.databaseManager=databaseManager;
     }
-    private static final String SELECT_PENDING =
-            "SELECT cargo_id, description, weight, destination, ship_id FROM cargo WHERE ship_id IS NULL ORDER BY cargo_id";
+    private static final String SELECT_ALL =
+            "SELECT cargo_id, description, weight, destination, ship_id FROM cargo ORDER BY cargo_id";
     private static final String INSERT =
-            "INSERT INTO cargo (description, weight, destination, ship_id) VALUES (?, ?, ?, NULL)";
+            "INSERT INTO cargo (description, weight, destination, ship_id) VALUES (?, ?, ?, ?)";
     private static final String ASSIGN = "UPDATE cargo SET ship_id = ? WHERE cargo_id = ?";
 
     public List<Cargo> findPendingCargo() throws SQLException {
         List<Cargo> cargoList = new ArrayList<>();
         try (Connection connection = databaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_PENDING);
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 cargoList.add(mapRow(resultSet));
@@ -40,6 +40,11 @@ public class CargoRepository {
             statement.setString(1, cargo.getDescription());
             statement.setDouble(2, cargo.getWeight());
             statement.setString(3, cargo.getDestination());
+            if (cargo.getShipId() == null) {
+                statement.setNull(4, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(4, cargo.getShipId());
+            }
             statement.executeUpdate();
         }
     }
@@ -64,4 +69,3 @@ public class CargoRepository {
         );
     }
 }
-

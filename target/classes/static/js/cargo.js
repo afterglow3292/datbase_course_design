@@ -2,13 +2,16 @@ class CargoTable {
     constructor(selector) {
         this.endpoint = '/api/cargo';
         this.tableBody = document.querySelector(`${selector} tbody`);
-        if (!this.tableBody) {
-            return;
+        this.isActive = Boolean(this.tableBody);
+        if (this.isActive) {
+            this.loadCargo();
         }
-        this.loadCargo();
     }
 
     async loadCargo() {
+        if (!this.isActive) {
+            return;
+        }
         try {
             const response = await fetch(this.endpoint);
             if (!response.ok) {
@@ -72,12 +75,81 @@ class CargoTable {
         if (typeof value !== 'number') {
             return '-';
         }
-        return `${value.toFixed(2)}`;
+        return value.toFixed(2);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    ['#cargoManagementTable', '#cargoTable'].forEach((selector) => {
-        new CargoTable(selector);
+async function populateShipOptions() {
+    const select = document.querySelector('#createCargoModal select[name="shipId"]');
+    if (!select) {
+        return;
+    }
+    select.innerHTML = '<option value="">暂不分配</option>';
+    try {
+        const resp = await fetch('/api/ships');
+        if (!resp.ok) {
+            throw new Error('加载船舶列表失败');
+        }
+        const ships = await resp.json();
+        ships.forEach((ship) => {
+            const option = document.createElement('option');
+            option.value = ship.id;
+            option.textContent = `#${ship.id} · ${ship.name}`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error(error);
+        select.innerHTML = '<option value="">无法获取船舶列表</option>';
+    }
+}
+
+function setupCreateCargoForm(tables) {
+    const form = document.getElementById('createCargoForm');
+    const modalElement = document.getElementById('createCargoModal');
+    if (!form) {
+        return;
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const payload = {
+            description: form.elements.description.value.trim(),
+            weight: Number(form.elements.weight.value),
+            destination: form.elements.destination.value.trim(),
+            shipId: form.elements.shipId.value ? Number(form.elements.shipId.value) : null
+        };
+
+        if (!payload.description || !payload.destination || Number.isNaN(payload.weight)) {
+            alert('请完整填写描述、目的地与重量');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/cargo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+            form.reset();
+            if (modalElement && window.bootstrap) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal?.hide();
+            }
+            await Promise.all(tables.map((table) => table.loadCargo()));
+        } catch (error) {
+            console.error(error);
+            alert('创建货物失败，请稍后重试。');
+        }
     });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tables = ['#cargoManagementTable', '#cargoTable']
+        .map((selector) => new CargoTable(selector))
+        .filter((table) => table.isActive);
+    setupCreateCargoForm(tables);
+    populateShipOptions();
 });

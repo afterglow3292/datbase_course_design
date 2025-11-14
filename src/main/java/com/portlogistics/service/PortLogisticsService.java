@@ -35,6 +35,13 @@ public class PortLogisticsService {
         return cargoRepository.findPendingCargo();
     }
 
+    public void createCargo(Cargo cargo) throws SQLException {
+        cargoRepository.save(cargo);
+        if (cargo.getShipId() != null) {
+            shipRepository.updateStatus(cargo.getShipId(), "LOADING");
+        }
+    }
+
     public void assignCargoToShip(int cargoId, int shipId) throws SQLException {
         cargoRepository.assignToShip(cargoId, shipId);
         shipRepository.updateStatus(shipId, "LOADING");

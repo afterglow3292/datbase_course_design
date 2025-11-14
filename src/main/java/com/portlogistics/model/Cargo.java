@@ -2,12 +2,15 @@ package com.portlogistics.model;
 
 import java.util.Objects;
 
-public final class Cargo {
-    private final int id;
-    private final String description;
-    private final double weight;
-    private final String destination;
-    private final Integer shipId;
+public class Cargo {
+    private int id;
+    private String description;
+    private double weight;
+    private String destination;
+    private Integer shipId;
+
+    public Cargo() {
+    }
 
     public Cargo(int id, String description, double weight, String destination, Integer shipId) {
         this.id = id;
@@ -21,20 +24,40 @@ public final class Cargo {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public double getWeight() {
         return weight;
     }
 
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
+
     public String getDestination() {
         return destination;
     }
 
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
+
     public Integer getShipId() {
         return shipId;
+    }
+
+    public void setShipId(Integer shipId) {
+        this.shipId = shipId;
     }
 
     public boolean isAssigned() {
