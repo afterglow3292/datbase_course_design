@@ -54,4 +54,12 @@ public class PortLogisticsService {
     public List<BerthSchedule> listUpcomingSchedules() throws SQLException {
         return berthScheduleRepository.findUpcomingSchedules();
     }
+    public void updateShip(int shipId, Ship ship) throws SQLException {
+        shipRepository.update(shipId, ship);
+    }
+
+    public void deleteShip(int shipId) throws SQLException {
+        shipRepository.delete(shipId);
+    }
+
 }

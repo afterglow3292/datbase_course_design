@@ -73,49 +73,13 @@
                             <th>#</th>
                             <th>船名</th>
                             <th>IMO</th>
-                            <th>船型</th>
                             <th>容量 (TEU)</th>
                             <th>状态</th>
                             <th class="text-end">操作</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td class="text-muted">1</td>
-                            <td class="fw-semibold">海洋之星</td>
-                            <td>IMO1234567</td>
-                            <td>集装箱</td>
-                            <td>20,000</td>
-                            <td><span class="badge bg-success-subtle text-success">已到港</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
-                                <button class="btn btn-sm btn-outline-danger">退役</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">2</td>
-                            <td class="fw-semibold">东方快车</td>
-                            <td>IMO2345678</td>
-                            <td>散货</td>
-                            <td>8,500</td>
-                            <td><span class="badge bg-warning-subtle text-warning">在航</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
-                                <button class="btn btn-sm btn-outline-danger">退役</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">3</td>
-                            <td class="fw-semibold">北方巨人</td>
-                            <td>IMO3456789</td>
-                            <td>油轮</td>
-                            <td>12,000</td>
-                            <td><span class="badge bg-info-subtle text-info">计划</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShipModal">编辑</button>
-                                <button class="btn btn-sm btn-outline-danger">退役</button>
-                            </td>
-                        </tr>
+                        <tbody>
                         </tbody>
                     </table>
                 </div>
@@ -220,52 +184,52 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editShipModalLabel">编辑船舶</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" ></button>
             </div>
             <div class="modal-body">
                 <form id="editShipForm">
                     <div class="mb-3">
-                        <label class="form-label">船名</label>
-                        <input type="text" class="form-control" value="海洋之星">
+                        <label class="form-label" for="editShipName">船名</label>
+                        <input type="text" class="form-control" id="editShipName" name="name" required>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">IMO 编号</label>
-                            <input type="text" class="form-control" value="IMO1234567">
+                            <label class="form-label" for="editShipImo">IMO 编号</label>
+                            <input type="text" class="form-control" id="editShipImo" name="imo" required>
                         </div>
-                        <div class="col-md-6">
+                        <!-- <div class="col-md-6">
                             <label class="form-label">船型</label>
-                            <!-- <select class="form-select">
+                             <select class="form-select">
                                 <option value="container" selected>集装箱</option>
                                 <option value="bulk">散货</option>
                                 <option value="tanker">油轮</option>
                                 <option value="ro_ro">滚装</option>
-                            </select> -->
-                        </div>
+                            </select> 
+                        </div> -->
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label">容量 (TEU)</label>
-                            <input type="number" class="form-control" value="20000">
+                            <label class="form-label" for="editShipCapacity">容量 (TEU)</label>
+                            <input type="number" class="form-control" id="editShipCapacity" name="capacityTeu" min="0" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">状态</label>
-                            <select class="form-select">
+                            <label class="form-label" for="editShipStatus">状态</label>
+                            <select class="form-select" id="editShipStatus" name="status">
                                 <option value="ARRIVED" selected>已到港</option>
                                 <option value="AT SEA">在航</option>
                                 <option value="SCHEDULED">计划中</option>
                             </select>
                         </div>
                     </div>
-                    <div class="mb-3 mt-2">
+                    <!-- <div class="mb-3 mt-2">
                         <label class="form-label">备注</label>
                         <textarea class="form-control" rows="2">内部编号：PL-001</textarea>
-                    </div>
+                    </div> -->
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-danger">退役</button>
-                <button type="submit" class="btn btn-primary">保存修改</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="editShipForm" class="btn btn-primary">保存修改</button>
             </div>
         </div>
     </div>

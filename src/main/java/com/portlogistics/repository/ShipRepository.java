@@ -17,7 +17,8 @@ public class ShipRepository {
     private static final String SELECT_ALL = "SELECT ship_id, name, imo, capacity_teu, status FROM ship ORDER BY ship_id";
     private static final String INSERT = "INSERT INTO ship (name, imo, capacity_teu, status) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_STATUS = "UPDATE ship SET status = ? WHERE ship_id = ?";
-    
+    private static final String UPDATE="UPDATE ship SET name=?,imo=?,capacity_teu=?,status=? WHERE ship_id=?";
+    private static final String DELETE="DELETE FROM ship WHERE ship_id=?";
     public ShipRepository(DatabaseManager databaseManager){
         this.databaseManager=databaseManager;
     }
@@ -61,5 +62,25 @@ public class ShipRepository {
                 resultSet.getInt("capacity_teu"),
                 resultSet.getString("status")
         );
+    }
+
+    public void update(int shipId,Ship ship) throws SQLException{
+        try(Connection connection =databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE)){
+                statement.setString(1,ship.getName());
+                statement.setString(2,ship.getImo());
+                statement.setInt(3,ship.getCapacityTeu());
+                statement.setString(4,ship.getStatus());
+                statement.setInt(5,shipId);
+                statement.executeUpdate();
+             }
+    }
+
+    public void delete(int shipId) throws SQLException{
+        try(Connection connection=databaseManager.getConnection();
+            PreparedStatement statement=connection.prepareStatement(DELETE)){
+                statement.setInt(1,shipId);
+                statement.executeUpdate();
+            }
     }
 }
