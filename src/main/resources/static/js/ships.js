@@ -8,19 +8,24 @@ class ShipTable {
         this.endpoint = '/api/ships';
         this.tableBody = document.querySelector(`${selector} tbody`);
         this.isActive = Boolean(this.tableBody);
+        this.searchTerm = '';
         if (this.isActive) {
             this.loadShips();
         }
     }
 
-    async loadShips() {
+    async loadShips(searchTerm) {
         if (!this.isActive) {
             return;
         }
+        if (typeof searchTerm === 'string') {
+            this.searchTerm = searchTerm.trim();
+        }
+        const query = this.searchTerm ? `?q=${encodeURIComponent(this.searchTerm)}` : '';
         try {
-            const response = await fetch(this.endpoint);
+            const response = await fetch(`${this.endpoint}${query}`);
             if (!response.ok) {
-                throw new Error(`加载船舶数据失败：${response.status}`);
+                throw new Error(`加载船舶数据失败，状态码：${response.status}`);
             }
             const ships = await response.json();
             this.render(ships);
@@ -28,7 +33,7 @@ class ShipTable {
             console.error(error);
             this.tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-danger">无法加载船舶数据，请稍后重试。</td>
+                    <td colspan="7" class="text-danger">无法加载船舶数据，请稍后重试</td>
                 </tr>
             `;
         }
@@ -69,7 +74,8 @@ class ShipTable {
             ARRIVED: '<span class="badge bg-success-subtle text-success">已到港</span>',
             'AT SEA': '<span class="badge bg-warning-subtle text-warning">在航</span>',
             AT_SEA: '<span class="badge bg-warning-subtle text-warning">在航</span>',
-            SCHEDULED: '<span class="badge bg-info-subtle text-info">计划</span>'
+            SCHEDULED: '<span class="badge bg-info-subtle text-info">计划</span>',
+            LOADING: '<span class="badge bg-primary-subtle text-primary">装载中</span>'
         };
         return map[status] || status || '-';
     }
@@ -82,7 +88,7 @@ class ShipTable {
     }
 }
 
-function setupCreateShipForm(shipTables) {
+function setupCreateShipForm(shipTablesRef) {
     const form = document.getElementById('createShipForm');
     const modalElement = document.getElementById('createShipModal');
     if (!form) {
@@ -122,10 +128,10 @@ function setupCreateShipForm(shipTables) {
                 const modal = bootstrap.Modal.getInstance(modalElement);
                 modal?.hide();
             }
-            await Promise.all(shipTables.map((table) => table.loadShips()));
+            await Promise.all(shipTablesRef.map((table) => table.loadShips()));
         } catch (error) {
             console.error(error);
-            alert('创建船舶失败，请稍后重试。');
+            alert('创建船舶失败，请稍后重试');
         }
     });
 }
@@ -161,7 +167,7 @@ function openEditShipModal(ship) {
     }
 }
 
-function setupEditShipForm(shipTables) {
+function setupEditShipForm(shipTablesRef) {
     const form = document.getElementById('editShipForm');
     const modalElement = document.getElementById('editShipModal');
     if (!form || !modalElement) {
@@ -204,12 +210,48 @@ function setupEditShipForm(shipTables) {
                 modal?.hide();
             }
             currentEditingShipId = null;
-            await Promise.all(shipTables.map((table) => table.loadShips()));
+            await Promise.all(shipTablesRef.map((table) => table.loadShips()));
         } catch (error) {
             console.error(error);
-            alert('更新船舶失败，请稍后重试。');
+            alert('更新船舶失败，请稍后重试');
         }
     });
+}
+
+function setupShipSearch(shipTablesRef) {
+    const searchInput = document.getElementById('shipSearchInput') || document.querySelector('#ships .section-heading input[type=\"search\"]');
+    const resetBtn = document.getElementById('shipSearchReset') || document.querySelector('#ships .section-heading button.btn-outline-secondary');
+    if (!searchInput) {
+        return;
+    }
+
+    const triggerSearch = async () => {
+        await Promise.all(shipTablesRef.map((table) => table.loadShips(searchInput.value)));
+    };
+
+    let debounceTimer = null;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(triggerSearch, 250);
+    });
+
+    searchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            clearTimeout(debounceTimer);
+            triggerSearch();
+        }
+    });
+
+    searchInput.addEventListener('blur', () => triggerSearch());
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            clearTimeout(debounceTimer);
+            triggerSearch();
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -218,13 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
         .filter((table) => table.isActive);
     setupCreateShipForm(shipTables);
     setupEditShipForm(shipTables);
+    setupShipSearch(shipTables);
 });
 
 async function handleDeleteShip(shipId) {
     if (!shipId) {
         return;
     }
-    const confirmed = window.confirm('确认删除该船舶吗？此操作无法撤销。');
+    const confirmed = window.confirm('确认删除该船舶吗？此操作无法撤销');
     if (!confirmed) {
         return;
     }
@@ -233,7 +276,7 @@ async function handleDeleteShip(shipId) {
         if (!response.ok) {
             const msg = await response.text();
             if (response.status === 409 || response.status === 400) {
-                alert('删除失败：该船舶存在关联的货物或泊位记录，请先解除关联后再删除。');
+                alert('删除失败：该船舶存在关联的货物或泊位记录，请先解除关联后再删除');
                 return;
             }
             throw new Error(msg);
@@ -244,7 +287,7 @@ async function handleDeleteShip(shipId) {
         if (error instanceof Error && error.message) {
             alert(`删除船舶失败：${error.message}`);
         } else {
-            alert('删除船舶失败，请稍后重试。');
+            alert('删除船舶失败，请稍后重试');
         }
     }
 }

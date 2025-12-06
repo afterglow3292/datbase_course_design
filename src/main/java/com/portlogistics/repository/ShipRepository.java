@@ -7,14 +7,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+// 找到文件开头的import部分，添加下面这行
+import java.sql.Statement;
 
 @Repository
 public class ShipRepository {
     private final DatabaseManager databaseManager;
     private static final String SELECT_ALL = "SELECT ship_id, name, imo, capacity_teu, status FROM ship ORDER BY ship_id";
+    private static final String SELECT_BY_KEYWORD = "SELECT ship_id, name, imo, capacity_teu, status FROM ship " +
+            "WHERE LOWER(name) LIKE ? OR LOWER(imo) LIKE ? ORDER BY ship_id";
     private static final String INSERT = "INSERT INTO ship (name, imo, capacity_teu, status) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_STATUS = "UPDATE ship SET status = ? WHERE ship_id = ?";
     private static final String UPDATE="UPDATE ship SET name=?,imo=?,capacity_teu=?,status=? WHERE ship_id=?";
@@ -29,6 +32,22 @@ public class ShipRepository {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 ships.add(mapRow(resultSet));
+            }
+        }
+        return ships;
+    }
+
+    public List<Ship> searchByKeyword(String keyword) throws SQLException {
+        List<Ship> ships = new ArrayList<>();
+        String like = "%" + keyword.toLowerCase() + "%";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_KEYWORD)) {
+            statement.setString(1, like);
+            statement.setString(2, like);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ships.add(mapRow(resultSet));
+                }
             }
         }
         return ships;

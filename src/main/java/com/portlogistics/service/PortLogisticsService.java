@@ -23,7 +23,10 @@ public class PortLogisticsService {
         this.berthScheduleRepository = berthScheduleRepository;
     }
 
-    public List<Ship> listShips() throws SQLException {
+    public List<Ship> listShips(String keyword) throws SQLException {
+        if (keyword != null && !keyword.isBlank()) {
+            return shipRepository.searchByKeyword(keyword.trim());
+        }
         return shipRepository.findAll();
     }
 
@@ -31,7 +34,10 @@ public class PortLogisticsService {
         shipRepository.save(ship);
     }
 
-    public List<Cargo> listPendingCargo() throws SQLException {
+    public List<Cargo> listPendingCargo(String keyword) throws SQLException {
+        if (keyword != null && !keyword.isBlank()) {
+            return cargoRepository.searchByKeyword(keyword.trim());
+        }
         return cargoRepository.findPendingCargo();
     }
 
@@ -40,6 +46,14 @@ public class PortLogisticsService {
         if (cargo.getShipId() != null) {
             shipRepository.updateStatus(cargo.getShipId(), "LOADING");
         }
+    }
+
+    public void updateCargo(int cargoId, Cargo cargo) throws SQLException {
+        cargoRepository.update(cargoId, cargo);
+    }
+
+    public void deleteCargo(int cargoId) throws SQLException {
+        cargoRepository.delete(cargoId);
     }
 
     public void assignCargoToShip(int cargoId, int shipId) throws SQLException {

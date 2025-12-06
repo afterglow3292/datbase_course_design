@@ -19,8 +19,8 @@ public class ShipController {
     }
 
     @GetMapping
-    public List<Ship> list() throws SQLException {
-        return service.listShips();
+    public List<Ship> list(@RequestParam(value = "q", required = false) String keyword) throws SQLException {
+        return service.listShips(keyword);
     }
 
     @PostMapping

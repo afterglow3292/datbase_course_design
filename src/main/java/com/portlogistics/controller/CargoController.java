@@ -17,12 +17,22 @@ public class CargoController {
     }
 
     @GetMapping
-    public List<Cargo> list() throws SQLException {
-        return service.listPendingCargo();
+    public List<Cargo> list(@RequestParam(value = "q", required = false) String keyword) throws SQLException {
+        return service.listPendingCargo(keyword);
     }
 
     @PostMapping
     public void create(@RequestBody Cargo cargo) throws SQLException {
         service.createCargo(cargo);
+    }
+
+    @PutMapping("/{cargoId}")
+    public void update(@PathVariable int cargoId, @RequestBody Cargo cargo) throws SQLException {
+        service.updateCargo(cargoId, cargo);
+    }
+
+    @DeleteMapping("/{cargoId}")
+    public void delete(@PathVariable int cargoId) throws SQLException {
+        service.deleteCargo(cargoId);
     }
 }
