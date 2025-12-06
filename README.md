@@ -1,3 +1,4 @@
+﻿
 ﻿# Port Logistics Management System
 
 A lightweight Java + MySQL sample project intended for database course design work. The system models common workflows for port logistics: registering ship arrivals, managing cargo assignments, and scheduling berth usage. The code uses a straightforward layered structure and plain JDBC so that the focus stays on SQL and schema design.
@@ -62,3 +63,5 @@ port-logistics-management/
 - Extend the repositories with additional queries required by your coursework.
 - Replace the CLI with a REST API or graphical interface if desired.
 - Add transaction handling or connection pooling once you are comfortable with the basics.
+
+# datbase_course_design
