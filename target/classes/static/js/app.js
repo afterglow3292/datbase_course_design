@@ -1,8 +1,12 @@
 console.log('index app.js loaded');
 
+// 只在首页(index.html)初始化这些元素
 const shipsTableBody = document.querySelector('#shipsTable tbody');
 const cargoTableBody = document.querySelector('#cargoTable tbody');
 const berthTableBody = document.querySelector('#berthTable tbody');
+
+// 检查是否在首页
+const isIndexPage = shipsTableBody || cargoTableBody || berthTableBody;
 
 const statShips = document.getElementById('statShips');
 const statShipsDetail = document.getElementById('statShipsDetail');
@@ -185,4 +189,12 @@ function formatDateTime(isoString) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadAll);
+// 只在首页加载数据
+document.addEventListener('DOMContentLoaded', () => {
+    if (isIndexPage) {
+        console.log('首页检测到，加载数据...');
+        loadAll();
+    } else {
+        console.log('非首页，跳过app.js数据加载');
+    }
+});

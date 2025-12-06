@@ -102,4 +102,13 @@ public class ShipRepository {
                 statement.executeUpdate();
             }
     }
+
+    public boolean existsById(int shipId) throws SQLException {
+        String FIND_BY_ID = "SELECT ship_id FROM ship WHERE ship_id = ?";
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(FIND_BY_ID)) {
+            stmt.setInt(1, shipId);
+            return stmt.executeQuery().next();
+        }
+    }
 }

@@ -30,3 +30,6 @@ CREATE TABLE IF NOT EXISTS berth_schedule (
 
 CREATE INDEX idx_cargo_destination ON cargo(destination);
 CREATE INDEX idx_berth_schedule_arrival ON berth_schedule(arrival_time);
+
+CREATE INDEX idx_berth_number_time ON berth_schedule(berth_number, arrival_time, departure_time);
+CREATE INDEX idx_berth_schedule_status ON berth_schedule(status);
