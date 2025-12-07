@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', initAuthUI);
 const shipsTableBody = document.querySelector('#shipsTable tbody');
 const cargoTableBody = document.querySelector('#cargoTable tbody');
 const berthTableBody = document.querySelector('#berthTable tbody');
+const voyageTableBody = document.querySelector('#voyageTable tbody');
+const warehouseTableBody = document.querySelector('#warehouseTable tbody');
 
 // 检查是否在首页
 const isIndexPage = shipsTableBody || cargoTableBody || berthTableBody;
@@ -41,16 +43,23 @@ const statBerths = document.getElementById('statBerths');
 const statBerthsDetail = document.getElementById('statBerthsDetail');
 const lastUpdated = document.getElementById('lastUpdated');
 
+// 限制显示条数
+const MAX_DISPLAY_ROWS = 10;
+
 let ships = [];
 let cargo = [];
 let berths = [];
+let voyages = [];
+let warehouses = [];
 
 async function loadAll() {
     try {
-        const [shipsResp, cargoResp, berthsResp] = await Promise.all([
+        const [shipsResp, cargoResp, berthsResp, voyagesResp, warehousesResp] = await Promise.all([
             fetch('/api/ships'),
             fetch('/api/cargo'),
-            fetch('/api/berths')
+            fetch('/api/berths'),
+            fetch('/api/voyages'),
+            fetch('/api/warehouses')
         ]);
         if (!shipsResp.ok || !cargoResp.ok || !berthsResp.ok) {
             throw new Error('加载数据失败');
@@ -58,6 +67,8 @@ async function loadAll() {
         ships = await shipsResp.json();
         cargo = await cargoResp.json();
         berths = await berthsResp.json();
+        voyages = voyagesResp.ok ? await voyagesResp.json() : [];
+        warehouses = warehousesResp.ok ? await warehousesResp.json() : [];
         renderAll();
     } catch (error) {
         console.error(error);
@@ -69,6 +80,8 @@ function renderAll() {
     renderShips();
     renderCargo();
     renderBerths();
+    renderVoyages();
+    renderWarehouses();
     renderStats();
     updateTimestamp();
 }
@@ -76,7 +89,7 @@ function renderAll() {
 function renderShips() {
     if (!shipsTableBody) return;
     shipsTableBody.innerHTML = '';
-    ships.forEach((ship) => {
+    ships.slice(0, MAX_DISPLAY_ROWS).forEach((ship) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="text-muted">${ship.id ?? '-'}</td>
@@ -92,7 +105,7 @@ function renderShips() {
 function renderCargo() {
     if (!cargoTableBody) return;
     cargoTableBody.innerHTML = '';
-    cargo.forEach((item) => {
+    cargo.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
         const statusInfo = item.shipId ? `已分配至 #${item.shipId}` : '待分配';
         const statusClass = item.shipId ? 'success' : 'warning text-dark';
         const row = document.createElement('tr');
@@ -110,7 +123,7 @@ function renderCargo() {
 function renderBerths() {
     if (!berthTableBody) return;
     berthTableBody.innerHTML = '';
-    berths.forEach((item) => {
+    berths.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="text-muted">${item.id ?? '-'}</td>
@@ -122,6 +135,85 @@ function renderBerths() {
         `;
         berthTableBody.appendChild(row);
     });
+}
+
+function renderVoyages() {
+    if (!voyageTableBody) return;
+    voyageTableBody.innerHTML = '';
+    voyages.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-muted">${item.planId ?? item.id ?? '-'}</td>
+            <td class="fw-semibold">${item.voyageNumber ?? '-'}</td>
+            <td>${resolveShipName(item.shipId)}</td>
+            <td>${item.departurePort ?? '-'}</td>
+            <td>${item.arrivalPort ?? '-'}</td>
+            <td>${formatDateTime(item.plannedDeparture ?? item.departureTime)}</td>
+            <td><span class="badge rounded-pill bg-${voyageStatusTint(item.voyageStatus ?? item.status)}">${voyageStatusLabel(item.voyageStatus ?? item.status)}</span></td>
+        `;
+        voyageTableBody.appendChild(row);
+    });
+}
+
+function renderWarehouses() {
+    if (!warehouseTableBody) return;
+    warehouseTableBody.innerHTML = '';
+    warehouses.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        const capacity = item.totalCapacity ?? item.capacity ?? 0;
+        const used = item.usedCapacity ?? 0;
+        const usageRate = capacity > 0 ? ((used / capacity) * 100).toFixed(1) : 0;
+        const usageClass = usageRate > 80 ? 'danger' : usageRate > 50 ? 'warning' : 'success';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-muted">${item.warehouseId ?? item.id ?? '-'}</td>
+            <td class="fw-semibold">${item.warehouseName ?? item.name ?? '-'}</td>
+            <td>${warehouseTypeLabel(item.warehouseType ?? item.type)}</td>
+            <td>${capacity?.toLocaleString() ?? '-'} m³</td>
+            <td>${used?.toLocaleString() ?? '0'} m³</td>
+            <td><span class="badge rounded-pill bg-${usageClass}">${usageRate}%</span></td>
+        `;
+        warehouseTableBody.appendChild(row);
+    });
+}
+
+function voyageStatusTint(status) {
+    switch (status) {
+        case 'COMPLETED': return 'success';
+        case 'IN_PROGRESS': return 'primary';
+        case 'SCHEDULED': return 'info';
+        case 'CANCELLED': return 'danger';
+        default: return 'secondary';
+    }
+}
+
+function voyageStatusLabel(status) {
+    switch (status) {
+        case 'COMPLETED': return '已完成';
+        case 'IN_PROGRESS': return '进行中';
+        case 'SCHEDULED': return '计划中';
+        case 'CANCELLED': return '已取消';
+        default: return status ?? '-';
+    }
+}
+
+function warehouseTypeLabel(type) {
+    switch (type) {
+        case 'GENERAL': 
+        case '普通仓库': 
+            return '普通仓库';
+        case 'COLD_STORAGE': 
+        case 'COLD': 
+        case '冷藏仓库': 
+            return '冷藏仓库';
+        case 'HAZARDOUS': 
+        case 'DANGEROUS': 
+        case '危险品仓库': 
+            return '危险品仓库';
+        case 'CONTAINER': 
+        case '集装箱堆场': 
+            return '集装箱堆场';
+        default: return type ?? '-';
+    }
 }
 
 function renderStats() {
@@ -151,9 +243,9 @@ function updateTimestamp() {
 }
 
 function showLoadError() {
-    [shipsTableBody, cargoTableBody, berthTableBody].forEach((tbody) => {
+    [shipsTableBody, cargoTableBody, berthTableBody, voyageTableBody, warehouseTableBody].forEach((tbody) => {
         if (tbody) {
-            tbody.innerHTML = `<tr><td class="text-danger" colspan="6">加载失败</td></tr>`;
+            tbody.innerHTML = `<tr><td class="text-danger" colspan="7">加载失败</td></tr>`;
         }
     });
 }
