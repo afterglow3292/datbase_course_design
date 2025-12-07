@@ -154,6 +154,7 @@ class BerthTable {
     }
 
     async loadSchedules() {
+        this.showLoading();
         try {
             const response = await fetch(this.endpoint);
             if (!response.ok) {
@@ -170,6 +171,18 @@ class BerthTable {
                 </tr>
             `;
         }
+    }
+
+    // 显示加载中
+    showLoading() {
+        this.tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    正在加载数据...
+                </td>
+            </tr>
+        `;
     }
 
     render(schedules) {
@@ -262,6 +275,49 @@ class BerthTable {
             return shipName.includes(lowerKeyword) || berthNumber.includes(lowerKeyword);
         });
         this.render(filtered);
+    }
+
+    // 高级筛选
+    advancedFilter(filters) {
+        let filtered = [...this.allSchedules];
+
+        // 按状态筛选
+        if (filters.status) {
+            filtered = filtered.filter(item => item.status === filters.status);
+        }
+
+        // 按船舶筛选
+        if (filters.shipId) {
+            filtered = filtered.filter(item => item.shipId === parseInt(filters.shipId));
+        }
+
+        // 按泊位编号筛选
+        if (filters.berthNumber) {
+            const keyword = filters.berthNumber.toLowerCase();
+            filtered = filtered.filter(item => 
+                (item.berthNumber || '').toLowerCase().includes(keyword)
+            );
+        }
+
+        // 按时间范围筛选
+        if (filters.startTime) {
+            const startDate = new Date(filters.startTime);
+            filtered = filtered.filter(item => {
+                if (!item.arrivalTime) return false;
+                return new Date(item.arrivalTime) >= startDate;
+            });
+        }
+
+        if (filters.endTime) {
+            const endDate = new Date(filters.endTime);
+            filtered = filtered.filter(item => {
+                if (!item.arrivalTime) return false;
+                return new Date(item.arrivalTime) <= endDate;
+            });
+        }
+
+        this.render(filtered);
+        return filtered.length;
     }
 }
 
@@ -430,19 +486,21 @@ async function deleteBerthSchedule(scheduleId) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('页面初始化开始...');
     
-    // 1. 先加载船舶数据
-    await ShipManager.loadShips();
-    console.log('船舶数据加载完成，共', ShipManager.ships.length, '条');
+    // 初始化表格并显示加载状态
+    berthTableInstance = new BerthTable('#berthManagementTable');
+    berthTableInstance.showLoading();
     
-    // 2. 填充船舶选择器
+    // 并行加载船舶数据和排程数据
+    const [ships] = await Promise.all([
+        ShipManager.loadShips(),
+        berthTableInstance.loadSchedules()
+    ]);
+    console.log('数据加载完成，船舶:', ShipManager.ships.length, '条');
+    
+    // 填充船舶选择器
     ShipManager.populateSelector('#createBerthModal select[name="shipId"]');
     ShipManager.populateSelector('#editBerthModal select[name="shipId"]');
     console.log('船舶选择器填充完成');
-    
-    // 3. 初始化表格
-    berthTableInstance = new BerthTable('#berthManagementTable');
-    await berthTableInstance.loadSchedules();
-    console.log('表格初始化完成');
     
     // 4. 绑定搜索框事件
     const searchInput = document.querySelector('#berths input[type="search"]');
@@ -508,6 +566,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('编辑撤销按钮绑定成功');
     } else {
         console.error('未找到编辑撤销按钮');
+    }
+    
+    // 9. 填充筛选面板的船舶选择器
+    ShipManager.populateSelector('#filterPanel select[name="filterShip"]');
+    
+    // 10. 绑定应用筛选按钮
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', () => {
+            console.log('应用筛选按钮点击');
+            const form = document.getElementById('filterForm');
+            const filters = {
+                status: form.querySelector('select[name="filterStatus"]').value,
+                shipId: form.querySelector('select[name="filterShip"]').value,
+                berthNumber: form.querySelector('input[name="filterBerth"]').value,
+                startTime: form.querySelector('input[name="filterStartTime"]').value,
+                endTime: form.querySelector('input[name="filterEndTime"]').value
+            };
+            console.log('筛选条件：', filters);
+            
+            if (berthTableInstance) {
+                const count = berthTableInstance.advancedFilter(filters);
+                console.log('筛选结果：', count, '条');
+            }
+            
+            // 关闭筛选面板
+            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('filterPanel'));
+            if (offcanvas) offcanvas.hide();
+        });
+        console.log('应用筛选按钮绑定成功');
+    }
+    
+    // 11. 绑定清除筛选按钮
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener('click', () => {
+            console.log('清除筛选按钮点击');
+            const form = document.getElementById('filterForm');
+            form.reset();
+            // 重新填充船舶选择器（因为reset会清空）
+            ShipManager.populateSelector('#filterPanel select[name="filterShip"]');
+            
+            if (berthTableInstance) {
+                berthTableInstance.render(berthTableInstance.allSchedules);
+            }
+            
+            // 关闭筛选面板
+            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('filterPanel'));
+            if (offcanvas) offcanvas.hide();
+        });
+        console.log('清除筛选按钮绑定成功');
     }
     
     console.log('页面初始化完成');

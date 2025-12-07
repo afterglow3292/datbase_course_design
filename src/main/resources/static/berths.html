@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- 替换为稳定CDN，避免跟踪防护拦截 -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- 使用 unpkg CDN -->
+    <link href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/custom.css">
 </head>
 <body class="dashboard-theme">
@@ -93,10 +93,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form>
+        <form id="filterForm">
             <div class="mb-3">
                 <label class="form-label">状态</label>
-                <select class="form-select">
+                <select class="form-select" name="filterStatus">
                     <option value="">全部</option>
                     <option value="PLANNED">计划</option>
                     <option value="CONFIRMED">已确认</option>
@@ -104,20 +104,22 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">泊位区域</label>
-                <select class="form-select">
+                <label class="form-label">船舶</label>
+                <select class="form-select" name="filterShip">
                     <option value="">全部</option>
-                    <option value="A">A 区</option>
-                    <option value="B">B 区</option>
-                    <option value="C">C 区</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">时间范围</label>
-                <input type="datetime-local" class="form-control mb-2">
-                <input type="datetime-local" class="form-control">
+                <label class="form-label">泊位编号</label>
+                <input type="text" class="form-control" name="filterBerth" placeholder="输入泊位编号">
             </div>
-            <button type="button" class="btn btn-primary w-100">应用筛选</button>
+            <div class="mb-3">
+                <label class="form-label">到港时间范围</label>
+                <input type="datetime-local" class="form-control mb-2" name="filterStartTime" placeholder="开始时间">
+                <input type="datetime-local" class="form-control" name="filterEndTime" placeholder="结束时间">
+            </div>
+            <button type="button" class="btn btn-primary w-100" id="applyFilterBtn">应用筛选</button>
+            <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="clearFilterBtn">清除筛选</button>
         </form>
     </div>
 </div>
@@ -231,7 +233,7 @@
 </div>
 
 <!-- 修复JS引入顺序：Bootstrap → app.js → berths.js -->
-<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/berths.js"></script>
 </body>
