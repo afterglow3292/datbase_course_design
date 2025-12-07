@@ -21,6 +21,11 @@ public class CargoController {
         return service.listPendingCargo(keyword);
     }
 
+    @GetMapping("/stats/monthly")
+    public List<java.util.Map<String, Object>> getMonthlyStats() throws SQLException {
+        return service.getCargoMonthlyStats();
+    }
+
     @PostMapping
     public void create(@RequestBody Cargo cargo) throws SQLException {
         service.createCargo(cargo);

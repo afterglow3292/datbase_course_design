@@ -26,6 +26,14 @@ public class CargoRepository {
     private static final String ASSIGN = "UPDATE cargo SET ship_id = ? WHERE cargo_id = ?";
     private static final String UPDATE = "UPDATE cargo SET description = ?, weight = ?, destination = ?, ship_id = ? WHERE cargo_id = ?";
     private static final String DELETE = "DELETE FROM cargo WHERE cargo_id = ?";
+    private static final String SELECT_MONTHLY_STATS = 
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, " +
+            "SUM(weight) as total_weight, " +
+            "SUM(CASE WHEN ship_id IS NOT NULL THEN weight ELSE 0 END) as assigned_weight " +
+            "FROM cargo " +
+            "WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) " +
+            "GROUP BY DATE_FORMAT(created_at, '%Y-%m') " +
+            "ORDER BY month";
 
     public List<Cargo> findPendingCargo() throws SQLException {
         List<Cargo> cargoList = new ArrayList<>();
@@ -101,6 +109,23 @@ public class CargoRepository {
             statement.setInt(1, cargoId);
             statement.executeUpdate();
         }
+    }
+
+    // 获取月度货物统计数据
+    public List<java.util.Map<String, Object>> getMonthlyStats() throws SQLException {
+        List<java.util.Map<String, Object>> stats = new ArrayList<>();
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_MONTHLY_STATS);
+             ResultSet rs = statement.executeQuery()) {
+            while (rs.next()) {
+                java.util.Map<String, Object> row = new java.util.HashMap<>();
+                row.put("month", rs.getString("month"));
+                row.put("totalWeight", rs.getDouble("total_weight"));
+                row.put("assignedWeight", rs.getDouble("assigned_weight"));
+                stats.add(row);
+            }
+        }
+        return stats;
     }
 
     private Cargo mapRow(ResultSet resultSet) throws SQLException {

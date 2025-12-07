@@ -56,6 +56,10 @@ public class PortLogisticsService {
         cargoRepository.delete(cargoId);
     }
 
+    public List<java.util.Map<String, Object>> getCargoMonthlyStats() throws SQLException {
+        return cargoRepository.getMonthlyStats();
+    }
+
     public void assignCargoToShip(int cargoId, int shipId) throws SQLException {
         cargoRepository.assignToShip(cargoId, shipId);
         shipRepository.updateStatus(shipId, "LOADING");
