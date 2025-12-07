@@ -1,5 +1,30 @@
 console.log('index app.js loaded');
 
+// ========== 通用登录状态和退出登录功能 ==========
+function initAuthUI() {
+    const currentUserEl = document.getElementById('currentUser');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    // 显示当前用户 - 从localStorage读取user对象
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (currentUserEl) {
+        currentUserEl.textContent = user ? `欢迎，${user.username}` : '未登录';
+    }
+    
+    // 退出登录按钮事件
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        });
+    }
+}
+
+// 页面加载时初始化认证UI
+document.addEventListener('DOMContentLoaded', initAuthUI);
+
 // 只在首页(index.html)初始化这些元素
 const shipsTableBody = document.querySelector('#shipsTable tbody');
 const cargoTableBody = document.querySelector('#cargoTable tbody');

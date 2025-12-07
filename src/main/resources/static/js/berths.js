@@ -619,5 +619,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('清除筛选按钮绑定成功');
     }
     
+    // 12. 显示当前登录用户
+    const currentUserEl = document.getElementById('currentUser');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (currentUserEl && user) {
+        currentUserEl.textContent = `欢迎，${user.username}`;
+    }
+    
+    // 13. 绑定退出登录按钮
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        });
+    }
+    
     console.log('页面初始化完成');
 });
