@@ -25,41 +25,58 @@ function initAuthUI() {
 // 页面加载时初始化认证UI
 document.addEventListener('DOMContentLoaded', initAuthUI);
 
-// 只在首页(index.html)初始化这些元素
-const shipsTableBody = document.querySelector('#shipsTable tbody');
-const cargoTableBody = document.querySelector('#cargoTable tbody');
-const berthTableBody = document.querySelector('#berthTable tbody');
-const voyageTableBody = document.querySelector('#voyageTable tbody');
-const warehouseTableBody = document.querySelector('#warehouseTable tbody');
-
-// 检查是否在首页
-const isIndexPage = shipsTableBody || cargoTableBody || berthTableBody;
-
-const statShips = document.getElementById('statShips');
-const statShipsDetail = document.getElementById('statShipsDetail');
-const statCargo = document.getElementById('statCargo');
-const statCargoDetail = document.getElementById('statCargoDetail');
-const statBerths = document.getElementById('statBerths');
-const statBerthsDetail = document.getElementById('statBerthsDetail');
-const lastUpdated = document.getElementById('lastUpdated');
-
 // 限制显示条数
 const MAX_DISPLAY_ROWS = 10;
+
+// 表格元素引用（在DOMContentLoaded后初始化）
+let shipsTableBody, cargoTableBody, berthTableBody, voyageTableBody, warehouseTableBody, transportTaskTableBody, portTableBody;
+let statShips, statShipsDetail, statCargo, statCargoDetail, statBerths, statBerthsDetail, lastUpdated;
+let isIndexPage = false;
 
 let ships = [];
 let cargo = [];
 let berths = [];
 let voyages = [];
 let warehouses = [];
+let transportTasks = [];
+let ports = [];
+
+// 初始化DOM元素引用
+function initDOMElements() {
+    shipsTableBody = document.querySelector('#shipsTable tbody');
+    cargoTableBody = document.querySelector('#cargoTable tbody');
+    berthTableBody = document.querySelector('#berthTable tbody');
+    voyageTableBody = document.querySelector('#voyageTable tbody');
+    warehouseTableBody = document.querySelector('#warehouseTable tbody');
+    transportTaskTableBody = document.querySelector('#dashboardTransportTaskTable tbody');
+    portTableBody = document.querySelector('#dashboardPortTable tbody');
+    
+    statShips = document.getElementById('statShips');
+    statShipsDetail = document.getElementById('statShipsDetail');
+    statCargo = document.getElementById('statCargo');
+    statCargoDetail = document.getElementById('statCargoDetail');
+    statBerths = document.getElementById('statBerths');
+    statBerthsDetail = document.getElementById('statBerthsDetail');
+    lastUpdated = document.getElementById('lastUpdated');
+    
+    // 检查是否在首页
+    isIndexPage = !!(shipsTableBody || cargoTableBody || berthTableBody);
+    
+    console.log('DOM元素初始化完成, isIndexPage:', isIndexPage);
+    console.log('transportTaskTableBody:', transportTaskTableBody ? '找到' : '未找到');
+    console.log('portTableBody:', portTableBody ? '找到' : '未找到');
+}
 
 async function loadAll() {
     try {
-        const [shipsResp, cargoResp, berthsResp, voyagesResp, warehousesResp] = await Promise.all([
+        const [shipsResp, cargoResp, berthsResp, voyagesResp, warehousesResp, transportTasksResp, portsResp] = await Promise.all([
             fetch('/api/ships'),
             fetch('/api/cargo'),
             fetch('/api/berths'),
             fetch('/api/voyages'),
-            fetch('/api/warehouses')
+            fetch('/api/warehouses'),
+            fetch('/api/transport-tasks'),
+            fetch('/api/ports')
         ]);
         if (!shipsResp.ok || !cargoResp.ok || !berthsResp.ok) {
             throw new Error('加载数据失败');
@@ -69,9 +86,28 @@ async function loadAll() {
         berths = await berthsResp.json();
         voyages = voyagesResp.ok ? await voyagesResp.json() : [];
         warehouses = warehousesResp.ok ? await warehousesResp.json() : [];
+        
+        // 加载运输任务数据
+        if (transportTasksResp.ok) {
+            transportTasks = await transportTasksResp.json();
+            console.log('运输任务数据加载成功:', transportTasks.length, '条');
+        } else {
+            transportTasks = [];
+            console.warn('运输任务API响应失败:', transportTasksResp.status);
+        }
+        
+        // 加载港口数据
+        if (portsResp.ok) {
+            ports = await portsResp.json();
+            console.log('港口数据加载成功:', ports.length, '条');
+        } else {
+            ports = [];
+            console.warn('港口API响应失败:', portsResp.status);
+        }
+        
         renderAll();
     } catch (error) {
-        console.error(error);
+        console.error('加载数据出错:', error);
         showLoadError();
     }
 }
@@ -82,6 +118,8 @@ function renderAll() {
     renderBerths();
     renderVoyages();
     renderWarehouses();
+    renderTransportTasks();
+    renderPorts();
     renderStats();
     updateTimestamp();
 }
@@ -176,6 +214,77 @@ function renderWarehouses() {
     });
 }
 
+function renderTransportTasks() {
+    if (!transportTaskTableBody) {
+        console.log('transportTaskTableBody 未找到');
+        return;
+    }
+    console.log('渲染运输任务:', transportTasks.length, '条');
+    transportTaskTableBody.innerHTML = '';
+    if (transportTasks.length === 0) {
+        transportTaskTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+    transportTasks.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-muted">${item.taskId ?? '-'}</td>
+            <td class="fw-semibold">${item.taskNumber ?? '-'}</td>
+            <td>${item.truckLicense ?? '-'}</td>
+            <td>${item.driverName ?? '-'}</td>
+            <td>${item.pickupLocation ?? '-'}</td>
+            <td>${item.deliveryLocation ?? '-'}</td>
+            <td><span class="badge rounded-pill bg-${transportTaskStatusTint(item.status)}">${transportTaskStatusLabel(item.status)}</span></td>
+        `;
+        transportTaskTableBody.appendChild(row);
+    });
+}
+
+function renderPorts() {
+    if (!portTableBody) {
+        console.log('portTableBody 未找到');
+        return;
+    }
+    console.log('渲染港口:', ports.length, '条');
+    portTableBody.innerHTML = '';
+    if (ports.length === 0) {
+        portTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无数据</td></tr>';
+        return;
+    }
+    ports.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-muted">${item.portId ?? '-'}</td>
+            <td class="fw-semibold">${item.portCode ?? '-'}</td>
+            <td>${item.portName ?? '-'}</td>
+            <td>${item.country ?? '-'}</td>
+            <td>${item.city ?? '-'}</td>
+            <td>${item.totalBerths ?? 0}</td>
+        `;
+        portTableBody.appendChild(row);
+    });
+}
+
+function transportTaskStatusTint(status) {
+    switch (status) {
+        case 'DELIVERED': return 'success';
+        case 'IN_TRANSIT': return 'primary';
+        case 'PENDING': return 'warning';
+        case 'CANCELLED': return 'danger';
+        default: return 'secondary';
+    }
+}
+
+function transportTaskStatusLabel(status) {
+    switch (status) {
+        case 'DELIVERED': return '已送达';
+        case 'IN_TRANSIT': return '运输中';
+        case 'PENDING': return '待执行';
+        case 'CANCELLED': return '已取消';
+        default: return status ?? '-';
+    }
+}
+
 function voyageStatusTint(status) {
     switch (status) {
         case 'COMPLETED': return 'success';
@@ -243,7 +352,7 @@ function updateTimestamp() {
 }
 
 function showLoadError() {
-    [shipsTableBody, cargoTableBody, berthTableBody, voyageTableBody, warehouseTableBody].forEach((tbody) => {
+    [shipsTableBody, cargoTableBody, berthTableBody, voyageTableBody, warehouseTableBody, transportTaskTableBody, portTableBody].forEach((tbody) => {
         if (tbody) {
             tbody.innerHTML = `<tr><td class="text-danger" colspan="7">加载失败</td></tr>`;
         }
@@ -308,6 +417,9 @@ function formatDateTime(isoString) {
 
 // 只在首页加载数据
 document.addEventListener('DOMContentLoaded', () => {
+    // 先初始化DOM元素引用
+    initDOMElements();
+    
     if (isIndexPage) {
         console.log('首页检测到，加载数据...');
         loadAll();

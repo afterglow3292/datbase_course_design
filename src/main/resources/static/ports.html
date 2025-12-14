@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>港口物流管理系统 - 港口管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="dashboard-theme">
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⚓</span>
+            <div>
+                <div class="brand-title">港口物流</div>
+                <div class="brand-sub">Port Logistics</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="index.html"><i class="bi bi-speedometer"></i> 总览</a>
+            <a class="nav-link" href="ships.html"><i class="bi bi-tsunami"></i> 船舶管理</a>
+            <a class="nav-link" href="cargo.html"><i class="bi bi-box-seam"></i> 货物管理</a>
+            <a class="nav-link" href="berths.html"><i class="bi bi-calendar-event"></i> 泊位排程</a>
+            <a class="nav-link" href="voyages.html"><i class="bi bi-compass"></i> 航次计划</a>
+            <a class="nav-link" href="warehouses.html"><i class="bi bi-building"></i> 仓库管理</a>
+            <a class="nav-link" href="transport-tasks.html"><i class="bi bi-truck"></i> 运输任务</a>
+            <a class="nav-link active" href="ports.html"><i class="bi bi-geo-alt"></i> 港口管理</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p class="small text-white-50 mb-1" id="currentUser">未登录</p>
+            <button class="btn btn-outline-light btn-sm w-100" id="logoutBtn">
+                <i class="bi bi-box-arrow-right"></i> 退出登录
+            </button>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header mb-4">
+            <div>
+                <p class="text-uppercase small text-secondary mb-1">Port Management</p>
+                <h1 class="h3 fw-bold mb-2">港口管理中心</h1>
+                <p class="text-muted mb-0">管理港口信息、泊位数量和地理位置</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPortModal">
+                    <i class="bi bi-plus"></i> 新增港口
+                </button>
+            </div>
+        </header>
+
+        <section class="section-block" id="ports">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">港口列表</h2>
+                    <p class="text-muted mb-0">支持按港口代码、名称、国家筛选</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <input type="search" class="form-control form-control-sm" id="portSearchInput" placeholder="搜索港口代码/名称" style="width: 200px;">
+                    <select class="form-select form-select-sm" id="countryFilter" style="width: 120px;">
+                        <option value="">全部国家</option>
+                    </select>
+                    <button class="btn btn-outline-secondary btn-sm" id="refreshBtn"><i class="bi bi-arrow-repeat"></i> 刷新</button>
+                </div>
+            </div>
+            <div class="card-table">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="portTable">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>港口代码</th>
+                            <th>港口名称</th>
+                            <th>国家</th>
+                            <th>城市</th>
+                            <th>泊位数</th>
+                            <th>最大船舶(米)</th>
+                            <th>坐标</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- 新增港口模态框 -->
+<div class="modal fade" id="createPortModal" tabindex="-1" aria-labelledby="createPortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPortModalLabel">新增港口</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPortForm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">港口代码 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="portCode" placeholder="如：CNSHA" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">港口名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="portName" placeholder="如：上海港" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">国家 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="country" placeholder="如：中国" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">城市</label>
+                            <input type="text" class="form-control" name="city" placeholder="如：上海">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">纬度</label>
+                            <input type="number" class="form-control" name="latitude" step="0.0000001" min="-90" max="90" placeholder="如：31.2304">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">经度</label>
+                            <input type="number" class="form-control" name="longitude" step="0.0000001" min="-180" max="180" placeholder="如：121.4737">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">泊位总数</label>
+                            <input type="number" class="form-control" name="totalBerths" min="0" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">最大可停靠船舶尺寸(米)</label>
+                            <input type="number" class="form-control" name="maxVesselSize" step="0.01" min="0" placeholder="如：400.00">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="createSaveBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 编辑港口模态框 -->
+<div class="modal fade" id="editPortModal" tabindex="-1" aria-labelledby="editPortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPortModalLabel">编辑港口</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPortForm">
+                    <input type="hidden" name="portId">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">港口代码 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="portCode" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">港口名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="portName" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">国家 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="country" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">城市</label>
+                            <input type="text" class="form-control" name="city">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">纬度</label>
+                            <input type="number" class="form-control" name="latitude" step="0.0000001" min="-90" max="90">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">经度</label>
+                            <input type="number" class="form-control" name="longitude" step="0.0000001" min="-180" max="180">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">泊位总数</label>
+                            <input type="number" class="form-control" name="totalBerths" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">最大可停靠船舶尺寸(米)</label>
+                            <input type="number" class="form-control" name="maxVesselSize" step="0.01" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" id="editDeleteBtn">删除港口</button>
+                <button type="button" class="btn btn-primary" id="editSaveBtn">保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ports.js"></script>
+</body>
+</html>

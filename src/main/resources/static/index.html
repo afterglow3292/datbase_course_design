@@ -7,8 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjIS6e66fH0s3rQQwAW1p6MO2q67f2YkN9c2IcALew+OrCXaRkfj" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/custom.css">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
@@ -31,6 +30,7 @@
             <a class="nav-link" href="voyages.html"><i class="bi bi-compass"></i> 航次计划</a>
             <a class="nav-link" href="warehouses.html"><i class="bi bi-building"></i> 仓库管理</a>
             <a class="nav-link" href="transport-tasks.html"><i class="bi bi-truck"></i> 运输任务</a>
+            <a class="nav-link" href="ports.html"><i class="bi bi-geo-alt"></i> 港口管理</a>
         </nav>
         <div class="sidebar-footer">
             <p class="small text-white-50 mb-1" id="currentUser">未登录</p>
@@ -237,6 +237,65 @@
                 </div>
             </div>
         </section>
+
+        <section class="section-block" id="transportTasks">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">运输任务</h2>
+                    <p class="text-muted mb-0">跟踪货物陆路运输状态</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="transport-tasks.html">
+                    <i class="bi bi-arrow-right"></i> 进入管理
+                </a>
+            </div>
+            <div class="card-table">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="dashboardTransportTaskTable">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>任务编号</th>
+                            <th>车牌号</th>
+                            <th>司机</th>
+                            <th>取货地点</th>
+                            <th>交付地点</th>
+                            <th>状态</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-block" id="ports">
+            <div class="section-heading">
+                <div>
+                    <h2 class="h5 mb-1">港口管理</h2>
+                    <p class="text-muted mb-0">管理港口信息与泊位资源</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="ports.html">
+                    <i class="bi bi-arrow-right"></i> 进入管理
+                </a>
+            </div>
+            <div class="card-table">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="dashboardPortTable">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>港口代码</th>
+                            <th>港口名称</th>
+                            <th>国家</th>
+                            <th>城市</th>
+                            <th>泊位数</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -366,9 +425,7 @@
     </div>
 </div> -->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/dashboard-charts.js"></script>
 </body>
