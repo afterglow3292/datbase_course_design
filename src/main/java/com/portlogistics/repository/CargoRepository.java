@@ -111,6 +111,17 @@ public class CargoRepository {
         }
     }
 
+    public boolean existsById(int cargoId) throws SQLException {
+        String sql = "SELECT 1 FROM cargo WHERE cargo_id = ?";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, cargoId);
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     // 获取月度货物统计数据
     public List<java.util.Map<String, Object>> getMonthlyStats() throws SQLException {
         List<java.util.Map<String, Object>> stats = new ArrayList<>();
