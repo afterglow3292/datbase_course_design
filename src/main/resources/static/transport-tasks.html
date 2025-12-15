@@ -78,6 +78,7 @@
                         <tr>
                             <th>#</th>
                             <th>任务编号</th>
+                            <th>关联货物</th>
                             <th>车牌号</th>
                             <th>司机</th>
                             <th>取货地点</th>
@@ -134,8 +135,10 @@
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label">取货地点 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="pickupLocation" required>
+                            <label class="form-label">取货地点（仓库） <span class="text-danger">*</span></label>
+                            <select class="form-select" name="pickupLocation" required>
+                                <option value="">请选择仓库</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">交付地点 <span class="text-danger">*</span></label>
@@ -202,8 +205,10 @@
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label">取货地点 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="pickupLocation" required>
+                            <label class="form-label">取货地点（仓库） <span class="text-danger">*</span></label>
+                            <select class="form-select" name="pickupLocation" required>
+                                <option value="">请选择仓库</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">交付地点 <span class="text-danger">*</span></label>

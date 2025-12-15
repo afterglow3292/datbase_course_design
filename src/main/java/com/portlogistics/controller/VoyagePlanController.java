@@ -89,14 +89,14 @@ public class VoyagePlanController {
         VoyagePlan plan = new VoyagePlan();
         plan.setVoyageNumber((String) request.get("voyageNumber"));
         plan.setShipId(parseInteger(request.get("shipId")));
-        plan.setDeparturePort((String) request.get("departurePort"));
-        plan.setArrivalPort((String) request.get("arrivalPort"));
+        plan.setDeparturePortId(parseInteger(request.get("departurePortId")));
+        plan.setArrivalPortId(parseInteger(request.get("arrivalPortId")));
         plan.setAssignedBerthId(request.get("assignedBerthId") != null ? parseInteger(request.get("assignedBerthId")) : null);
         plan.setPlannedDeparture(voyagePlanService.parseDateTime((String) request.get("plannedDeparture")));
         plan.setPlannedArrival(voyagePlanService.parseDateTime((String) request.get("plannedArrival")));
         plan.setActualDeparture(voyagePlanService.parseDateTime((String) request.get("actualDeparture")));
         plan.setActualArrival(voyagePlanService.parseDateTime((String) request.get("actualArrival")));
-        plan.setVoyageStatus((String) request.getOrDefault("voyageStatus", "PLANNED"));
+        plan.setVoyageStatus((String) request.getOrDefault("voyageStatus", "SCHEDULED"));
         plan.setCreatedBy(request.get("createdBy") != null ? parseInteger(request.get("createdBy")) : null);
         return plan;
     }

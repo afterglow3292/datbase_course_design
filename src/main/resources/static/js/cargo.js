@@ -7,9 +7,7 @@ class CargoTable {
         this.tableBody = document.querySelector(`${selector} tbody`);
         this.isActive = Boolean(this.tableBody);
         this.searchTerm = '';
-        if (this.isActive) {
-            this.loadCargo();
-        }
+        // 不在构造函数中自动加载，等待船舶数据加载完成后再加载
     }
 
     async loadCargo(searchTerm) {
@@ -46,7 +44,7 @@ class CargoTable {
                 <td class="fw-semibold">${item.description ?? '-'}</td>
                 <td>${this.formatWeight(item.weight)}</td>
                 <td>${item.destination ?? '-'}</td>
-                <td>${this.resolveShip(item.shipId)}</td>
+                <td>${this.resolveShip(item)}</td>
                 <td>${this.renderStatus(item.shipId)}</td>
             `;
 
@@ -75,11 +73,18 @@ class CargoTable {
         return '<span class="badge bg-success-subtle text-success">已分配</span>';
     }
 
-    resolveShip(shipId) {
-        if (shipId == null) {
+    resolveShip(item) {
+        // 优先使用后端返回的shipName（通过JOIN查询获取）
+        if (item.shipName) {
+            return item.shipName;
+        }
+        // shipId实际上是voyage_plan_id，不能直接用来查找船舶
+        // 如果后端没有返回shipName，显示航次信息或待分配
+        if (item.shipId == null || item.shipId === 0) {
             return '待分配';
         }
-        return `船舶 #${shipId}`;
+        // 显示航次ID（等待后端重启后会显示正确的船舶名称）
+        return `航次 #${item.shipId}`;
     }
 
     formatWeight(value) {
@@ -284,10 +289,25 @@ async function handleDeleteCargo(cargoId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 先加载船舶数据到全局变量
+    try {
+        const resp = await fetch('/api/ships');
+        if (resp.ok) {
+            window.ships = await resp.json();
+        }
+    } catch (e) {
+        console.error('加载船舶列表失败', e);
+        window.ships = [];
+    }
+    
     tables = ['#cargoManagementTable', '#cargoTable']
         .map((selector) => new CargoTable(selector))
         .filter((table) => table.isActive);
+    
+    // 船舶数据加载完成后，再加载货物数据
+    await Promise.all(tables.map((table) => table.loadCargo()));
+    
     setupCreateCargoForm(tables);
     setupEditCargoForm(tables);
     setupCargoSearch(tables);

@@ -19,7 +19,7 @@ public class PortLogisticsApplication {
         return args -> {
             Scanner scanner = new Scanner(System.in);
             System.out.println("===== 泊位排程系统 =====");
-            System.out.println("命令：create 船舶ID 泊位号 到港时间 离港时间(可选) 状态 | list 日期 | upcoming | update 排程ID 状态 | exit");
+            System.out.println("命令：create 船舶ID 港口ID 泊位号 到港时间 离港时间(可选) 状态 | list 日期 | upcoming | update 排程ID 状态 | exit");
 
             while (true) {
                 System.out.print("\n输入命令：");
@@ -31,13 +31,14 @@ public class PortLogisticsApplication {
                 try {
                     switch (parts[0].toLowerCase()) {
                         case "create":
-                            if (parts.length < 5) { System.out.println("参数不足"); break; }
+                            if (parts.length < 6) { System.out.println("参数不足，格式：create 船舶ID 港口ID 泊位号 到港时间 离港时间(可选) 状态"); break; }
                             int shipId = Integer.parseInt(parts[1]);
-                            String berth = parts[2];
-                            String arrTime = parts[3] + " " + parts[4];
-                            String depTime = parts.length >= 7 ? parts[5] + " " + parts[6] : null;
-                            String status = parts.length >= 8 ? parts[7] : "PLANNED";
-                            scheduleService.createSchedule(shipId, berth, arrTime, depTime, status);
+                            int portId = Integer.parseInt(parts[2]);
+                            String berth = parts[3];
+                            String arrTime = parts[4] + " " + parts[5];
+                            String depTime = parts.length >= 8 ? parts[6] + " " + parts[7] : null;
+                            String status = parts.length >= 9 ? parts[8] : "PLANNED";
+                            scheduleService.createSchedule(shipId, portId, berth, arrTime, depTime, status);
                             System.out.println("创建成功");
                             break;
                         case "list":

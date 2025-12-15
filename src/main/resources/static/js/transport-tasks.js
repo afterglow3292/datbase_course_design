@@ -2,9 +2,11 @@
 (function() {
     const API_BASE = '/api/transport-tasks';
     const CARGO_API = '/api/cargo';
+    const WAREHOUSE_API = '/api/warehouses';
     
     let allTasks = [];
     let allCargos = [];
+    let allWarehouses = [];
     let editingTaskId = null;
 
     // 状态映射
@@ -19,6 +21,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadTasks();
         loadCargos();
+        loadWarehouses();
         bindEvents();
     });
 
@@ -76,12 +79,46 @@
             select.innerHTML = '<option value="">不关联货物</option>';
             allCargos.forEach(cargo => {
                 const option = document.createElement('option');
-                option.value = cargo.id;
-                option.textContent = `${cargo.id} - ${cargo.description} (${cargo.weight}吨)`;
+                option.value = cargo.cargoId || cargo.id;
+                option.textContent = `${cargo.cargoId || cargo.id} - ${cargo.description} (${cargo.weight}吨)`;
                 select.appendChild(option);
             });
             if (currentValue) select.value = currentValue;
         });
+    }
+
+    // 加载仓库列表
+    async function loadWarehouses() {
+        try {
+            const response = await fetch(WAREHOUSE_API);
+            if (!response.ok) throw new Error('加载失败');
+            allWarehouses = await response.json();
+            populateWarehouseSelects();
+        } catch (error) {
+            console.error('加载仓库列表失败:', error);
+        }
+    }
+
+    // 填充仓库下拉框（取货地点）
+    function populateWarehouseSelects() {
+        const selects = document.querySelectorAll('select[name="pickupLocation"]');
+        selects.forEach(select => {
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">请选择仓库</option>';
+            allWarehouses.forEach(warehouse => {
+                const option = document.createElement('option');
+                option.value = warehouse.warehouseName;
+                option.textContent = `${warehouse.warehouseName} (${warehouse.location || '未知位置'})`;
+                select.appendChild(option);
+            });
+            if (currentValue) select.value = currentValue;
+        });
+    }
+
+    // 根据货物ID获取货物信息
+    function getCargoInfo(cargoId) {
+        if (!cargoId) return null;
+        return allCargos.find(c => (c.cargoId || c.id) === cargoId);
     }
 
 
@@ -93,18 +130,27 @@
         tbody.innerHTML = '';
         
         if (tasks.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">暂无运输任务</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">暂无运输任务</td></tr>';
             return;
         }
         
         tasks.forEach(task => {
             const status = statusMap[task.status] || { text: task.status, class: 'bg-secondary' };
+            const cargo = getCargoInfo(task.cargoId);
+            const cargoDisplay = cargo 
+                ? `<span class="badge bg-info-subtle text-info">${cargo.description}</span><br><small class="text-muted">${cargo.weight}吨</small>`
+                : '<span class="text-muted">-</span>';
+            const driverDisplay = task.driverName 
+                ? `${task.driverName}${task.driverPhone ? '<br><small class="text-muted">' + task.driverPhone + '</small>' : ''}`
+                : '-';
             const tr = document.createElement('tr');
+            // 列顺序：#、任务编号、关联货物、车牌号、司机、取货地点、交付地点、计划取货、计划交付、状态、操作
             tr.innerHTML = `
                 <td>${task.taskId}</td>
-                <td><strong>${task.taskNumber}</strong></td>
+                <td><strong>${task.taskNumber || '-'}</strong></td>
+                <td>${cargoDisplay}</td>
                 <td>${task.truckLicense || '-'}</td>
-                <td>${task.driverName || '-'}${task.driverPhone ? '<br><small class="text-muted">' + task.driverPhone + '</small>' : ''}</td>
+                <td>${driverDisplay}</td>
                 <td>${task.pickupLocation || '-'}</td>
                 <td>${task.deliveryLocation || '-'}</td>
                 <td>${formatDateTime(task.plannedPickup)}</td>
@@ -187,13 +233,31 @@
         editingTaskId = taskId;
         const form = document.getElementById('editTaskForm');
         
+        // 先填充下拉框选项
+        populateCargoSelects();
+        populateWarehouseSelects();
+        
         form.querySelector('[name="taskId"]').value = task.taskId;
         form.querySelector('[name="taskNumber"]').value = task.taskNumber || '';
         form.querySelector('[name="cargoId"]').value = task.cargoId || '';
         form.querySelector('[name="truckLicense"]').value = task.truckLicense || '';
         form.querySelector('[name="driverName"]').value = task.driverName || '';
         form.querySelector('[name="driverPhone"]').value = task.driverPhone || '';
-        form.querySelector('[name="pickupLocation"]').value = task.pickupLocation || '';
+        
+        // 设置取货地点（仓库选择）
+        const pickupSelect = form.querySelector('[name="pickupLocation"]');
+        if (pickupSelect) {
+            // 尝试精确匹配，如果没有则添加一个临时选项
+            const existingOption = Array.from(pickupSelect.options).find(opt => opt.value === task.pickupLocation);
+            if (!existingOption && task.pickupLocation) {
+                const tempOption = document.createElement('option');
+                tempOption.value = task.pickupLocation;
+                tempOption.textContent = task.pickupLocation + ' (历史数据)';
+                pickupSelect.appendChild(tempOption);
+            }
+            pickupSelect.value = task.pickupLocation || '';
+        }
+        
         form.querySelector('[name="deliveryLocation"]').value = task.deliveryLocation || '';
         form.querySelector('[name="plannedPickup"]').value = formatDateTimeForInput(task.plannedPickup);
         form.querySelector('[name="plannedDelivery"]').value = formatDateTimeForInput(task.plannedDelivery);

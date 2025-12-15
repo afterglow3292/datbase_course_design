@@ -75,6 +75,7 @@
                         <thead class="table-light">
                         <tr>
                             <th>#</th>
+                            <th>所属港口</th>
                             <th>船舶</th>
                             <th>泊位</th>
                             <th>计划到港</th>
@@ -140,16 +141,23 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="mb-3">
-                        <label class="form-label">船舶</label>
-                        <select class="form-select" name="shipId" required>
-                            <option value="1">#1 · 海洋之星</option>
-                            <option value="2">#2 · 东方快车</option>
-                        </select>
-                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">泊位编号</label>
+                            <label class="form-label">所属港口 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="portId" required>
+                                <option value="">请选择港口</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">船舶 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="shipId" required>
+                                <option value="">请选择船舶</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">泊位编号 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="berthNumber" required>
                         </div>
                         <div class="col-md-6">
@@ -163,17 +171,13 @@
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label">计划到港</label>
+                            <label class="form-label">计划到港 <span class="text-danger">*</span></label>
                             <input type="datetime-local" class="form-control" name="arrivalTime" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">计划离港</label>
                             <input type="datetime-local" class="form-control" name="departureTime">
                         </div>
-                    </div>
-                    <div class="mb-3 mt-2">
-                        <label class="form-label">备注</label>
-                        <textarea class="form-control" rows="2"></textarea>
                     </div>
                 </form>
             </div>
@@ -194,15 +198,23 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="mb-3">
-                        <label class="form-label">船舶</label>
-                        <select class="form-select" name="shipId" required>
-                            <option value="">请选择船舶</option>
-                        </select>
-                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">泊位编号</label>
+                            <label class="form-label">所属港口 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="portId" required>
+                                <option value="">请选择港口</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">船舶 <span class="text-danger">*</span></label>
+                            <select class="form-select" name="shipId" required>
+                                <option value="">请选择船舶</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">泊位编号 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="berthNumber" required>
                         </div>
                         <div class="col-md-6">
@@ -216,17 +228,13 @@
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label">计划到港</label>
+                            <label class="form-label">计划到港 <span class="text-danger">*</span></label>
                             <input type="datetime-local" class="form-control" name="arrivalTime" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">计划离港</label>
                             <input type="datetime-local" class="form-control" name="departureTime">
                         </div>
-                    </div>
-                    <div class="mb-3 mt-2">
-                        <label class="form-label">备注</label>
-                        <textarea class="form-control" name="remarks" rows="2"></textarea>
                     </div>
                 </form>
             </div>

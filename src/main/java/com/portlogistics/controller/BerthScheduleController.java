@@ -38,9 +38,10 @@ public class BerthScheduleController {
             if (schedule.getShipId() <= 0 || schedule.getBerthNumber() == null || schedule.getArrivalTime() == null) {
                 return ResponseEntity.badRequest().body("船舶ID、泊位编号、到港时间为必填项！");
             }
-            // 调用Service保存
+            // 调用Service保存（包含portId）
             scheduleService.createSchedule(
                     schedule.getShipId(),
+                    schedule.getPortId(),
                     schedule.getBerthNumber().trim(),
                     schedule.getArrivalTime().toString(), // LocalDateTime转字符串（ISO格式）
                     schedule.getDepartureTime() != null ? schedule.getDepartureTime().toString() : null,
@@ -67,10 +68,11 @@ public class BerthScheduleController {
             if (schedule.getShipId() <= 0 || schedule.getBerthNumber() == null || schedule.getArrivalTime() == null) {
                 return ResponseEntity.badRequest().body("船舶ID、泊位编号、到港时间为必填项！");
             }
-            // 调用Service更新
+            // 调用Service更新（包含portId）
             scheduleService.updateSchedule(
                     id,
                     schedule.getShipId(),
+                    schedule.getPortId(),
                     schedule.getBerthNumber().trim(),
                     schedule.getArrivalTime().toString(),
                     schedule.getDepartureTime() != null ? schedule.getDepartureTime().toString() : null,

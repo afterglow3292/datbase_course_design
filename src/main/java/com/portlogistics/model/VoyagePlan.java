@@ -6,8 +6,8 @@ public class VoyagePlan {
     private int planId;
     private String voyageNumber;
     private int shipId;
-    private String departurePort;
-    private String arrivalPort;
+    private int departurePortId;  // 改为外键ID
+    private int arrivalPortId;    // 改为外键ID
     private Integer assignedBerthId;
     private LocalDateTime plannedDeparture;
     private LocalDateTime plannedArrival;
@@ -16,27 +16,14 @@ public class VoyagePlan {
     private String voyageStatus;
     private Integer createdBy;
     private LocalDateTime createdAt;
+    
+    // 用于显示的港口名称（非数据库字段）
+    private String departurePortName;
+    private String arrivalPortName;
+    // 用于显示的船舶名称（非数据库字段）
+    private String shipName;
 
     public VoyagePlan() {}
-
-    public VoyagePlan(int planId, String voyageNumber, int shipId, String departurePort, String arrivalPort,
-                      Integer assignedBerthId, LocalDateTime plannedDeparture, LocalDateTime plannedArrival,
-                      LocalDateTime actualDeparture, LocalDateTime actualArrival, String voyageStatus,
-                      Integer createdBy, LocalDateTime createdAt) {
-        this.planId = planId;
-        this.voyageNumber = voyageNumber;
-        this.shipId = shipId;
-        this.departurePort = departurePort;
-        this.arrivalPort = arrivalPort;
-        this.assignedBerthId = assignedBerthId;
-        this.plannedDeparture = plannedDeparture;
-        this.plannedArrival = plannedArrival;
-        this.actualDeparture = actualDeparture;
-        this.actualArrival = actualArrival;
-        this.voyageStatus = voyageStatus;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-    }
 
     // Getters and Setters
     public int getPlanId() { return planId; }
@@ -48,11 +35,11 @@ public class VoyagePlan {
     public int getShipId() { return shipId; }
     public void setShipId(int shipId) { this.shipId = shipId; }
 
-    public String getDeparturePort() { return departurePort; }
-    public void setDeparturePort(String departurePort) { this.departurePort = departurePort; }
+    public int getDeparturePortId() { return departurePortId; }
+    public void setDeparturePortId(int departurePortId) { this.departurePortId = departurePortId; }
 
-    public String getArrivalPort() { return arrivalPort; }
-    public void setArrivalPort(String arrivalPort) { this.arrivalPort = arrivalPort; }
+    public int getArrivalPortId() { return arrivalPortId; }
+    public void setArrivalPortId(int arrivalPortId) { this.arrivalPortId = arrivalPortId; }
 
     public Integer getAssignedBerthId() { return assignedBerthId; }
     public void setAssignedBerthId(Integer assignedBerthId) { this.assignedBerthId = assignedBerthId; }
@@ -78,15 +65,19 @@ public class VoyagePlan {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    public String getDeparturePortName() { return departurePortName; }
+    public void setDeparturePortName(String departurePortName) { this.departurePortName = departurePortName; }
+
+    public String getArrivalPortName() { return arrivalPortName; }
+    public void setArrivalPortName(String arrivalPortName) { this.arrivalPortName = arrivalPortName; }
+
+    public String getShipName() { return shipName; }
+    public void setShipName(String shipName) { this.shipName = shipName; }
+
     @Override
     public String toString() {
-        return "VoyagePlan{" +
-                "planId=" + planId +
-                ", voyageNumber='" + voyageNumber + '\'' +
-                ", shipId=" + shipId +
-                ", departurePort='" + departurePort + '\'' +
-                ", arrivalPort='" + arrivalPort + '\'' +
-                ", voyageStatus='" + voyageStatus + '\'' +
-                '}';
+        return "VoyagePlan{planId=" + planId + ", voyageNumber='" + voyageNumber + "', shipId=" + shipId + 
+               ", departurePortId=" + departurePortId + ", arrivalPortId=" + arrivalPortId + 
+               ", voyageStatus='" + voyageStatus + "'}";
     }
 }

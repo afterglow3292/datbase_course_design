@@ -1,4 +1,46 @@
 // ============================================
+// PortManager - 港口数据管理模块
+// ============================================
+const PortManager = {
+    ports: [],
+    loaded: false,
+
+    async loadPorts() {
+        if (this.loaded) return this.ports;
+        try {
+            const response = await fetch('/api/ports');
+            if (!response.ok) throw new Error('加载港口失败');
+            this.ports = await response.json();
+            this.loaded = true;
+            return this.ports;
+        } catch (error) {
+            console.error('加载港口列表失败：', error);
+            return [];
+        }
+    },
+
+    getPortName(portId) {
+        if (portId == null || portId === 0) return '未知港口';
+        const port = this.ports.find(p => p.portId === portId);
+        return port ? port.portName : '未知港口';
+    },
+
+    populateSelector(selector) {
+        const selectElement = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!selectElement) return;
+        const currentValue = selectElement.value;
+        selectElement.innerHTML = '<option value="">请选择港口</option>';
+        this.ports.forEach(port => {
+            const option = document.createElement('option');
+            option.value = port.portId;
+            option.textContent = `${port.portCode} · ${port.portName}`;
+            selectElement.appendChild(option);
+        });
+        if (currentValue) selectElement.value = currentValue;
+    }
+};
+
+// ============================================
 // ShipManager - 船舶数据管理模块
 // Requirements: 1.4, 2.2
 // ============================================
@@ -27,9 +69,9 @@ const ShipManager = {
 
     // 根据ID获取船舶名称
     getShipName(shipId) {
-        if (shipId == null) return '-';
+        if (shipId == null || shipId === 0) return '无船舶';
         const ship = this.ships.find(s => s.id === shipId);
-        return ship ? ship.name : `船舶 #${shipId}`;
+        return ship ? ship.name : '未知船舶';
     },
 
     // 填充船舶选择器
@@ -92,6 +134,10 @@ const FormManager = {
         // 存储当前编辑的排程ID
         form.dataset.scheduleId = schedule.id || schedule.berthId;
 
+        // 填充港口选择器
+        const portSelect = form.querySelector('select[name="portId"]');
+        if (portSelect) portSelect.value = schedule.portId || '';
+
         // 填充船舶选择器
         const shipSelect = form.querySelector('select[name="shipId"]');
         if (shipSelect) shipSelect.value = schedule.shipId;
@@ -116,6 +162,7 @@ const FormManager = {
     collectCreateFormData() {
         const form = document.querySelector('#createBerthModal form');
         return {
+            portId: parseInt(form.querySelector('select[name="portId"]').value) || 1,
             shipId: parseInt(form.querySelector('select[name="shipId"]').value),
             berthNumber: form.querySelector('input[name="berthNumber"]').value.trim(),
             arrivalTime: this.formatDateTimeForBackend(form.querySelector('input[name="arrivalTime"]').value),
@@ -129,6 +176,7 @@ const FormManager = {
         const form = document.querySelector('#editBerthModal form');
         return {
             id: parseInt(form.dataset.scheduleId),
+            portId: parseInt(form.querySelector('select[name="portId"]').value) || 1,
             shipId: parseInt(form.querySelector('select[name="shipId"]').value),
             berthNumber: form.querySelector('input[name="berthNumber"]').value.trim(),
             arrivalTime: this.formatDateTimeForBackend(form.querySelector('input[name="arrivalTime"]').value),
@@ -167,7 +215,7 @@ class BerthTable {
             console.error(error);
             this.tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-danger">无法加载泊位排程，请稍后重试。</td>
+                    <td colspan="8" class="text-danger">无法加载泊位排程，请稍后重试。</td>
                 </tr>
             `;
         }
@@ -177,7 +225,7 @@ class BerthTable {
     showLoading() {
         this.tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted">
+                <td colspan="8" class="text-center text-muted">
                     <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                     正在加载数据...
                 </td>
@@ -190,7 +238,7 @@ class BerthTable {
         if (!schedules || schedules.length === 0) {
             this.tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-muted text-center">暂无排程数据</td>
+                    <td colspan="8" class="text-muted text-center">暂无排程数据</td>
                 </tr>
             `;
             return;
@@ -199,9 +247,12 @@ class BerthTable {
         schedules.forEach((item) => {
             const row = document.createElement('tr');
             row.dataset.scheduleId = item.id || item.berthId;
+            // 获取港口名称：优先使用返回的portName，否则通过portId查找
+            const portName = item.portName || PortManager.getPortName(item.portId);
             row.innerHTML = `
                 <td class="text-muted">${item.id ?? item.berthId ?? '-'}</td>
-                <td class="fw-semibold">${this.resolveShip(item.shipId)}</td>
+                <td><span class="badge bg-primary-subtle text-primary">${portName}</span></td>
+                <td class="fw-semibold">${this.resolveShip(item)}</td>
                 <td>${item.berthNumber ?? '-'}</td>
                 <td>${this.formatDate(item.arrivalTime)}</td>
                 <td>${this.formatDate(item.departureTime)}</td>
@@ -240,8 +291,13 @@ class BerthTable {
         return map[status] || status || '-';
     }
 
-    resolveShip(shipId) {
-        return ShipManager.getShipName(shipId);
+    resolveShip(item) {
+        // 优先使用后端返回的shipName
+        if (item.shipName) {
+            return item.shipName;
+        }
+        // 备用：通过ShipManager获取
+        return ShipManager.getShipName(item.shipId);
     }
 
     formatDate(dateTime) {
@@ -365,7 +421,8 @@ async function saveBerthSchedule() {
             modal.hide();
             // 清空表单
             document.querySelector('#createBerthModal form').reset();
-            // 重新填充船舶选择器（因为reset会清空）
+            // 重新填充选择器（因为reset会清空）
+            PortManager.populateSelector('#createBerthModal select[name="portId"]');
             ShipManager.populateSelector('#createBerthModal select[name="shipId"]');
             // 刷新表格
             if (berthTableInstance) {
@@ -490,17 +547,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     berthTableInstance = new BerthTable('#berthManagementTable');
     berthTableInstance.showLoading();
     
-    // 并行加载船舶数据和排程数据
-    const [ships] = await Promise.all([
+    // 并行加载港口、船舶数据和排程数据
+    await Promise.all([
+        PortManager.loadPorts(),
         ShipManager.loadShips(),
         berthTableInstance.loadSchedules()
     ]);
-    console.log('数据加载完成，船舶:', ShipManager.ships.length, '条');
+    console.log('数据加载完成，港口:', PortManager.ports.length, '条，船舶:', ShipManager.ships.length, '条');
+    
+    // 填充港口选择器
+    PortManager.populateSelector('#createBerthModal select[name="portId"]');
+    PortManager.populateSelector('#editBerthModal select[name="portId"]');
     
     // 填充船舶选择器
     ShipManager.populateSelector('#createBerthModal select[name="shipId"]');
     ShipManager.populateSelector('#editBerthModal select[name="shipId"]');
-    console.log('船舶选择器填充完成');
+    console.log('选择器填充完成');
     
     // 4. 绑定搜索框事件
     const searchInput = document.querySelector('#berths input[type="search"]');

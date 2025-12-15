@@ -16,20 +16,28 @@ public class CargoRepository {
     public CargoRepository(DatabaseManager databaseManager){
         this.databaseManager=databaseManager;
     }
+    // 使用voyage_plan_id作为ship_id的别名，并JOIN获取船舶名称
     private static final String SELECT_ALL =
-            "SELECT cargo_id, description, weight, destination, ship_id FROM cargo ORDER BY cargo_id";
+            "SELECT c.cargo_id, c.description, c.weight, c.destination, c.voyage_plan_id as ship_id, s.name as ship_name " +
+            "FROM cargo c " +
+            "LEFT JOIN voyage_plan vp ON c.voyage_plan_id = vp.plan_id " +
+            "LEFT JOIN ship s ON vp.ship_id = s.ship_id " +
+            "ORDER BY c.cargo_id";
     private static final String SELECT_BY_KEYWORD =
-            "SELECT cargo_id, description, weight, destination, ship_id FROM cargo " +
-            "WHERE LOWER(description) LIKE ? OR LOWER(destination) LIKE ? ORDER BY cargo_id";
+            "SELECT c.cargo_id, c.description, c.weight, c.destination, c.voyage_plan_id as ship_id, s.name as ship_name " +
+            "FROM cargo c " +
+            "LEFT JOIN voyage_plan vp ON c.voyage_plan_id = vp.plan_id " +
+            "LEFT JOIN ship s ON vp.ship_id = s.ship_id " +
+            "WHERE LOWER(c.description) LIKE ? OR LOWER(c.destination) LIKE ? ORDER BY c.cargo_id";
     private static final String INSERT =
-            "INSERT INTO cargo (description, weight, destination, ship_id) VALUES (?, ?, ?, ?)";
-    private static final String ASSIGN = "UPDATE cargo SET ship_id = ? WHERE cargo_id = ?";
-    private static final String UPDATE = "UPDATE cargo SET description = ?, weight = ?, destination = ?, ship_id = ? WHERE cargo_id = ?";
+            "INSERT INTO cargo (description, weight, destination, voyage_plan_id) VALUES (?, ?, ?, ?)";
+    private static final String ASSIGN = "UPDATE cargo SET voyage_plan_id = ? WHERE cargo_id = ?";
+    private static final String UPDATE = "UPDATE cargo SET description = ?, weight = ?, destination = ?, voyage_plan_id = ? WHERE cargo_id = ?";
     private static final String DELETE = "DELETE FROM cargo WHERE cargo_id = ?";
     private static final String SELECT_MONTHLY_STATS = 
             "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, " +
             "SUM(weight) as total_weight, " +
-            "SUM(CASE WHEN ship_id IS NOT NULL THEN weight ELSE 0 END) as assigned_weight " +
+            "SUM(CASE WHEN voyage_plan_id IS NOT NULL THEN weight ELSE 0 END) as assigned_weight " +
             "FROM cargo " +
             "WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) " +
             "GROUP BY DATE_FORMAT(created_at, '%Y-%m') " +
@@ -140,13 +148,15 @@ public class CargoRepository {
     }
 
     private Cargo mapRow(ResultSet resultSet) throws SQLException {
+        Cargo cargo = new Cargo();
+        cargo.setCargoId(resultSet.getInt("cargo_id"));
+        cargo.setDescription(resultSet.getString("description"));
+        cargo.setWeight(resultSet.getDouble("weight"));
+        cargo.setDestination(resultSet.getString("destination"));
         Integer shipId = resultSet.getObject("ship_id") == null ? null : resultSet.getInt("ship_id");
-        return new Cargo(
-                resultSet.getInt("cargo_id"),
-                resultSet.getString("description"),
-                resultSet.getDouble("weight"),
-                resultSet.getString("destination"),
-                shipId
-        );
+        cargo.setShipId(shipId);
+        // 设置船舶名称（通过JOIN查询获取）
+        cargo.setShipName(resultSet.getString("ship_name"));
+        return cargo;
     }
 }

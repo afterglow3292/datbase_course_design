@@ -32,7 +32,7 @@ public class VoyagePlanService {
     public void createPlan(VoyagePlan plan) throws SQLException {
         validatePlan(plan, 0);
         if (plan.getVoyageStatus() == null || plan.getVoyageStatus().isEmpty()) {
-            plan.setVoyageStatus("PLANNED");
+            plan.setVoyageStatus("SCHEDULED");
         }
         voyagePlanRepository.save(plan);
     }
@@ -62,12 +62,12 @@ public class VoyagePlanService {
         if (!shipRepository.existsById(plan.getShipId())) {
             throw new IllegalArgumentException("船舶不存在");
         }
-        // 验证港口
-        if (plan.getDeparturePort() == null || plan.getDeparturePort().trim().isEmpty()) {
-            throw new IllegalArgumentException("出发港口不能为空");
+        // 验证港口ID
+        if (plan.getDeparturePortId() <= 0) {
+            throw new IllegalArgumentException("请选择出发港口");
         }
-        if (plan.getArrivalPort() == null || plan.getArrivalPort().trim().isEmpty()) {
-            throw new IllegalArgumentException("到达港口不能为空");
+        if (plan.getArrivalPortId() <= 0) {
+            throw new IllegalArgumentException("请选择到达港口");
         }
         // 验证时间
         if (plan.getPlannedDeparture() == null) {

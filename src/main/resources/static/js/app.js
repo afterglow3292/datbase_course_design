@@ -144,7 +144,8 @@ function renderCargo() {
     if (!cargoTableBody) return;
     cargoTableBody.innerHTML = '';
     cargo.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
-        const statusInfo = item.shipId ? `已分配至 #${item.shipId}` : '待分配';
+        // 优先使用后端返回的shipName，否则显示待分配
+        const shipDisplay = item.shipName ? item.shipName : (item.shipId ? `船舶 #${item.shipId}` : '待分配');
         const statusClass = item.shipId ? 'success' : 'warning text-dark';
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -152,7 +153,7 @@ function renderCargo() {
             <td class="fw-semibold">${item.description ?? '-'}</td>
             <td>${item.weight?.toFixed?.(2) ?? '-'}</td>
             <td>${item.destination ?? '-'}</td>
-            <td><span class="badge rounded-pill bg-${statusClass}">${statusInfo}</span></td>
+            <td><span class="badge rounded-pill bg-${statusClass}">${shipDisplay}</span></td>
         `;
         cargoTableBody.appendChild(row);
     });
@@ -162,10 +163,12 @@ function renderBerths() {
     if (!berthTableBody) return;
     berthTableBody.innerHTML = '';
     berths.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        // 优先使用后端返回的shipName
+        const shipDisplay = item.shipName ? item.shipName : resolveShipName(item.shipId);
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="text-muted">${item.id ?? '-'}</td>
-            <td class="fw-semibold">${resolveShipName(item.shipId)}</td>
+            <td class="fw-semibold">${shipDisplay}</td>
             <td>${item.berthNumber ?? '-'}</td>
             <td>${formatDateTime(item.arrivalTime ?? item.arrival)}</td>
             <td>${item.departureTime ? formatDateTime(item.departureTime) : '<span class="text-muted">待定</span>'}</td>
@@ -179,11 +182,13 @@ function renderVoyages() {
     if (!voyageTableBody) return;
     voyageTableBody.innerHTML = '';
     voyages.slice(0, MAX_DISPLAY_ROWS).forEach((item) => {
+        // 优先使用后端返回的shipName
+        const shipDisplay = item.shipName ? item.shipName : resolveShipName(item.shipId);
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="text-muted">${item.planId ?? item.id ?? '-'}</td>
             <td class="fw-semibold">${item.voyageNumber ?? '-'}</td>
-            <td>${resolveShipName(item.shipId)}</td>
+            <td>${shipDisplay}</td>
             <td>${item.departurePort ?? '-'}</td>
             <td>${item.arrivalPort ?? '-'}</td>
             <td>${formatDateTime(item.plannedDeparture ?? item.departureTime)}</td>
@@ -360,9 +365,9 @@ function showLoadError() {
 }
 
 function resolveShipName(shipId) {
-    if (shipId == null) return '-';
+    if (shipId == null || shipId === 0) return '无船舶';
     const ship = ships.find((s) => s.id === shipId);
-    return ship ? ship.name : `船舶 #${shipId}`;
+    return ship ? ship.name : '未知船舶';
 }
 
 function statusTint(status) {

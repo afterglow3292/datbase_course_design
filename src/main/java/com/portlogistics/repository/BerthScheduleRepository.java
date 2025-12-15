@@ -14,24 +14,29 @@ import java.util.List;
 public class BerthScheduleRepository {
     private final DatabaseManager databaseManager;
 
-    // SQL常量（字段顺序与数据库表一致）
-    private static final String INSERT = "INSERT INTO berth_schedule (ship_id, berth_number, arrival_time, departure_time, status) VALUES (?, ?, ?, ?, ?)";
-    private static final String SELECT_UPCOMING = "SELECT berth_id, ship_id, berth_number, arrival_time, departure_time, status FROM berth_schedule WHERE arrival_time > NOW() AND status NOT IN ('CANCELLED') ORDER BY arrival_time LIMIT 20";
-    private static final String SELECT_CONFLICTS = "SELECT berth_id FROM berth_schedule " +
+    // SQL常量（使用新的berth表，current_vessel_id代替ship_id，包含port_id、港口名称和船舶名称）
+    private static final String INSERT = "INSERT INTO berth (berth_number, port_id, current_vessel_id, arrival_time, departure_time, status) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SELECT_UPCOMING = "SELECT b.berth_id, b.current_vessel_id as ship_id, b.port_id, p.port_name, s.name as ship_name, b.berth_number, b.arrival_time, b.departure_time, b.status " +
+            "FROM berth b LEFT JOIN port p ON b.port_id = p.port_id LEFT JOIN ship s ON b.current_vessel_id = s.ship_id " +
+            "WHERE b.arrival_time > NOW() AND b.status NOT IN ('CANCELLED') ORDER BY b.arrival_time LIMIT 20";
+    private static final String SELECT_CONFLICTS = "SELECT berth_id FROM berth " +
             "WHERE berth_number = ? " +
+            "AND port_id = ? " +
             "AND status NOT IN ('CANCELLED') " +
             "AND arrival_time < ? " +
             "AND (departure_time IS NULL OR departure_time > ?)";
-    private static final String SELECT_BY_DATE = "SELECT berth_id, ship_id, berth_number, arrival_time, departure_time, status " +
-            "FROM berth_schedule " +
-            "WHERE DATE(arrival_time) = ? " +
-            "ORDER BY arrival_time";
-    private static final String UPDATE_STATUS = "UPDATE berth_schedule SET status = ? WHERE berth_id = ?";
-    private static final String SELECT_ALL = "SELECT berth_id, ship_id, berth_number, arrival_time, departure_time, status FROM berth_schedule ORDER BY arrival_time";
-    private static final String UPDATE = "UPDATE berth_schedule SET ship_id = ?, berth_number = ?, arrival_time = ?, departure_time = ?, status = ? WHERE berth_id = ?";
-    private static final String DELETE = "DELETE FROM berth_schedule WHERE berth_id = ?";
-    private static final String SELECT_CONFLICTS_EXCLUDING_SELF = "SELECT berth_id FROM berth_schedule " +
+    private static final String SELECT_BY_DATE = "SELECT b.berth_id, b.current_vessel_id as ship_id, b.port_id, p.port_name, s.name as ship_name, b.berth_number, b.arrival_time, b.departure_time, b.status " +
+            "FROM berth b LEFT JOIN port p ON b.port_id = p.port_id LEFT JOIN ship s ON b.current_vessel_id = s.ship_id " +
+            "WHERE DATE(b.arrival_time) = ? " +
+            "ORDER BY b.arrival_time";
+    private static final String UPDATE_STATUS = "UPDATE berth SET status = ? WHERE berth_id = ?";
+    private static final String SELECT_ALL = "SELECT b.berth_id, b.current_vessel_id as ship_id, b.port_id, p.port_name, s.name as ship_name, b.berth_number, b.arrival_time, b.departure_time, b.status " +
+            "FROM berth b LEFT JOIN port p ON b.port_id = p.port_id LEFT JOIN ship s ON b.current_vessel_id = s.ship_id ORDER BY b.berth_id";
+    private static final String UPDATE = "UPDATE berth SET current_vessel_id = ?, berth_number = ?, port_id = ?, arrival_time = ?, departure_time = ?, status = ? WHERE berth_id = ?";
+    private static final String DELETE = "DELETE FROM berth WHERE berth_id = ?";
+    private static final String SELECT_CONFLICTS_EXCLUDING_SELF = "SELECT berth_id FROM berth " +
             "WHERE berth_number = ? " +
+            "AND port_id = ? " +
             "AND berth_id != ? " +
             "AND status NOT IN ('CANCELLED') " +
             "AND arrival_time < ? " +
@@ -42,34 +47,36 @@ public class BerthScheduleRepository {
         this.databaseManager = databaseManager;
     }
 
-    // 保存排程（已删除setBerthId错误代码）
+    // 保存排程
     public void save(BerthSchedule schedule) throws SQLException {
         System.out.println("Repository save方法执行，参数：" + schedule);
         try (Connection conn = databaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT)) { // 移除Statement.RETURN_GENERATED_KEYS，避免获取自增ID
-            // 参数顺序：与INSERT SQL字段顺序完全一致
-            stmt.setInt(1, schedule.getShipId());
-            stmt.setString(2, schedule.getBerthNumber());
-            stmt.setTimestamp(3, Timestamp.valueOf(schedule.getArrivalTime()));
-            stmt.setTimestamp(4, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null);
-            stmt.setString(5, schedule.getStatus());
+             PreparedStatement stmt = conn.prepareStatement(INSERT)) {
+            // 参数顺序：berth_number, port_id, current_vessel_id, arrival_time, departure_time, status
+            stmt.setString(1, schedule.getBerthNumber());           // berth_number
+            stmt.setInt(2, schedule.getPortId() > 0 ? schedule.getPortId() : 1); // port_id，默认1
+            stmt.setInt(3, schedule.getShipId());                   // current_vessel_id
+            stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime())); // arrival_time
+            stmt.setTimestamp(5, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null); // departure_time
+            stmt.setString(6, schedule.getStatus());                // status
 
             int affectedRows = stmt.executeUpdate();
-            System.out.println("Repository执行影响行数：" + affectedRows); // 正常应返回1（表示插入成功）
+            System.out.println("Repository执行影响行数：" + affectedRows);
         } catch (SQLException e) {
             System.out.println("Repository save报错：" + e.getMessage());
-            throw e; // 抛出异常，让Service层处理
+            throw e;
         }
     }
 
     // 泊位冲突检测
-    public boolean hasConflict(String berthNumber, LocalDateTime arrivalTime, LocalDateTime departureTime) throws SQLException {
+    public boolean hasConflict(String berthNumber, int portId, LocalDateTime arrivalTime, LocalDateTime departureTime) throws SQLException {
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_CONFLICTS)) {
             stmt.setString(1, berthNumber);
+            stmt.setInt(2, portId > 0 ? portId : 1);
             // 冲突条件：当前排程的到达时间 < 已有排程的离开时间，且当前排程的离开时间 > 已有排程的到达时间
-            stmt.setTimestamp(2, Timestamp.valueOf(departureTime != null ? departureTime : LocalDateTime.now().plusYears(10)));
-            stmt.setTimestamp(3, Timestamp.valueOf(arrivalTime));
+            stmt.setTimestamp(3, Timestamp.valueOf(departureTime != null ? departureTime : LocalDateTime.now().plusYears(10)));
+            stmt.setTimestamp(4, Timestamp.valueOf(arrivalTime));
             // 若查询到结果，说明存在冲突
             return stmt.executeQuery().next();
         }
@@ -127,14 +134,30 @@ public class BerthScheduleRepository {
 
     // 结果集映射：将数据库查询结果转为BerthSchedule实体
     private BerthSchedule mapRow(ResultSet rs) throws SQLException {
-        return new BerthSchedule(
-                rs.getInt("berth_id"), // 对应实体的getId()（berth_id主键）
-                rs.getInt("ship_id"),
+        Timestamp arrivalTs = rs.getTimestamp("arrival_time");
+        Timestamp departureTs = rs.getTimestamp("departure_time");
+        BerthSchedule schedule = new BerthSchedule(
+                rs.getInt("berth_id"),
+                rs.getInt("ship_id"),  // 别名映射自 current_vessel_id
+                rs.getInt("port_id"),
                 rs.getString("berth_number"),
-                rs.getTimestamp("arrival_time").toLocalDateTime(),
-                rs.getTimestamp("departure_time") != null ? rs.getTimestamp("departure_time").toLocalDateTime() : null,
+                arrivalTs != null ? arrivalTs.toLocalDateTime() : null,
+                departureTs != null ? departureTs.toLocalDateTime() : null,
                 rs.getString("status")
         );
+        // 设置港口名称
+        try {
+            schedule.setPortName(rs.getString("port_name"));
+        } catch (SQLException e) {
+            // 某些查询可能没有port_name字段
+        }
+        // 设置船舶名称
+        try {
+            schedule.setShipName(rs.getString("ship_name"));
+        } catch (SQLException e) {
+            // 某些查询可能没有ship_name字段
+        }
+        return schedule;
     }
 
     // 更新排程
@@ -142,12 +165,14 @@ public class BerthScheduleRepository {
         System.out.println("Repository update方法执行，参数：" + schedule);
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE)) {
+            // UPDATE: current_vessel_id, berth_number, port_id, arrival_time, departure_time, status WHERE berth_id
             stmt.setInt(1, schedule.getShipId());
             stmt.setString(2, schedule.getBerthNumber());
-            stmt.setTimestamp(3, Timestamp.valueOf(schedule.getArrivalTime()));
-            stmt.setTimestamp(4, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null);
-            stmt.setString(5, schedule.getStatus());
-            stmt.setInt(6, schedule.getId());
+            stmt.setInt(3, schedule.getPortId() > 0 ? schedule.getPortId() : 1);
+            stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime()));
+            stmt.setTimestamp(5, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null);
+            stmt.setString(6, schedule.getStatus());
+            stmt.setInt(7, schedule.getId());
 
             int affectedRows = stmt.executeUpdate();
             System.out.println("Repository update影响行数：" + affectedRows);
@@ -172,13 +197,14 @@ public class BerthScheduleRepository {
     }
 
     // 泊位冲突检测（排除自身，用于更新时）
-    public boolean hasConflictExcludingSelf(int scheduleId, String berthNumber, LocalDateTime arrivalTime, LocalDateTime departureTime) throws SQLException {
+    public boolean hasConflictExcludingSelf(int scheduleId, String berthNumber, int portId, LocalDateTime arrivalTime, LocalDateTime departureTime) throws SQLException {
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_CONFLICTS_EXCLUDING_SELF)) {
             stmt.setString(1, berthNumber);
-            stmt.setInt(2, scheduleId);
-            stmt.setTimestamp(3, Timestamp.valueOf(departureTime != null ? departureTime : LocalDateTime.now().plusYears(10)));
-            stmt.setTimestamp(4, Timestamp.valueOf(arrivalTime));
+            stmt.setInt(2, portId > 0 ? portId : 1);
+            stmt.setInt(3, scheduleId);
+            stmt.setTimestamp(4, Timestamp.valueOf(departureTime != null ? departureTime : LocalDateTime.now().plusYears(10)));
+            stmt.setTimestamp(5, Timestamp.valueOf(arrivalTime));
             return stmt.executeQuery().next();
         }
     }

@@ -22,9 +22,9 @@ const ShipManager = {
     },
 
     getShipName(shipId) {
-        if (shipId == null) return '-';
+        if (shipId == null || shipId === 0) return '无船舶';
         const ship = this.ships.find(s => s.id === shipId);
-        return ship ? ship.name : `船舶 #${shipId}`;
+        return ship ? ship.name : '未知船舶';
     },
 
     populateSelector(selector) {
@@ -68,8 +68,48 @@ const BerthManager = {
         selectElement.innerHTML = '<option value="">暂不分配</option>';
         this.berths.forEach(berth => {
             const option = document.createElement('option');
-            option.value = berth.id;
+            option.value = berth.id || berth.berthId;
             option.textContent = `泊位 ${berth.berthNumber}`;
+            selectElement.appendChild(option);
+        });
+        if (currentValue) selectElement.value = currentValue;
+    }
+};
+
+// 港口管理器
+const PortManager = {
+    ports: [],
+    loaded: false,
+
+    async loadPorts() {
+        if (this.loaded) return this.ports;
+        try {
+            const response = await fetch('/api/ports');
+            if (!response.ok) throw new Error('加载港口失败');
+            this.ports = await response.json();
+            this.loaded = true;
+            return this.ports;
+        } catch (error) {
+            console.error('加载港口列表失败：', error);
+            return [];
+        }
+    },
+
+    getPortName(portId) {
+        if (portId == null) return '-';
+        const port = this.ports.find(p => p.portId === portId);
+        return port ? port.portName : `港口 #${portId}`;
+    },
+
+    populateSelector(selector) {
+        const selectElement = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!selectElement) return;
+        const currentValue = selectElement.value;
+        selectElement.innerHTML = '<option value="">请选择港口</option>';
+        this.ports.forEach(port => {
+            const option = document.createElement('option');
+            option.value = port.portId;
+            option.textContent = `${port.portCode} · ${port.portName}`;
             selectElement.appendChild(option);
         });
         if (currentValue) selectElement.value = currentValue;
@@ -92,6 +132,7 @@ class VoyageTable {
             const response = await fetch(this.endpoint);
             if (!response.ok) throw new Error('加载航次数据失败');
             const voyages = await response.json();
+            console.log('航次数据:', voyages); // 调试：打印后端返回的数据
             this.allVoyages = voyages;
             this.render(voyages);
         } catch (error) {
@@ -114,12 +155,17 @@ class VoyageTable {
         voyages.forEach(item => {
             const row = document.createElement('tr');
             row.dataset.voyageId = item.planId;
+            // 使用港口名称字段或通过ID查找
+            const departurePortName = item.departurePortName || PortManager.getPortName(item.departurePortId);
+            const arrivalPortName = item.arrivalPortName || PortManager.getPortName(item.arrivalPortId);
+            // 优先使用后端返回的shipName
+            const shipName = item.shipName || ShipManager.getShipName(item.shipId);
             row.innerHTML = `
                 <td class="text-muted">${item.planId ?? '-'}</td>
                 <td class="fw-semibold">${item.voyageNumber ?? '-'}</td>
-                <td>${ShipManager.getShipName(item.shipId)}</td>
-                <td>${item.departurePort ?? '-'}</td>
-                <td>${item.arrivalPort ?? '-'}</td>
+                <td>${shipName}</td>
+                <td>${departurePortName}</td>
+                <td>${arrivalPortName}</td>
                 <td>${this.formatDate(item.plannedDeparture)}</td>
                 <td>${this.formatDate(item.plannedArrival)}</td>
                 <td>${this.renderStatus(item.voyageStatus)}</td>
@@ -148,6 +194,7 @@ class VoyageTable {
 
     renderStatus(status) {
         const map = {
+            SCHEDULED: '<span class="badge bg-info-subtle text-info">计划中</span>',
             PLANNED: '<span class="badge bg-info-subtle text-info">计划中</span>',
             IN_PROGRESS: '<span class="badge bg-primary-subtle text-primary">进行中</span>',
             COMPLETED: '<span class="badge bg-success-subtle text-success">已完成</span>',
@@ -226,15 +273,15 @@ async function saveVoyage() {
     const formData = {
         voyageNumber: form.querySelector('[name="voyageNumber"]').value.trim(),
         shipId: parseInt(form.querySelector('[name="shipId"]').value),
-        departurePort: form.querySelector('[name="departurePort"]').value.trim(),
-        arrivalPort: form.querySelector('[name="arrivalPort"]').value.trim(),
+        departurePortId: parseInt(form.querySelector('[name="departurePortId"]').value),
+        arrivalPortId: parseInt(form.querySelector('[name="arrivalPortId"]').value),
         plannedDeparture: formatDateTimeForBackend(form.querySelector('[name="plannedDeparture"]').value),
         plannedArrival: formatDateTimeForBackend(form.querySelector('[name="plannedArrival"]').value),
         voyageStatus: form.querySelector('[name="voyageStatus"]').value,
         assignedBerthId: form.querySelector('[name="assignedBerthId"]').value || null
     };
 
-    if (!formData.voyageNumber || !formData.shipId || !formData.departurePort || !formData.arrivalPort || !formData.plannedDeparture || !formData.plannedArrival) {
+    if (!formData.voyageNumber || !formData.shipId || !formData.departurePortId || !formData.arrivalPortId || !formData.plannedDeparture || !formData.plannedArrival) {
         alert('请填写所有必填项！');
         return;
     }
@@ -252,6 +299,8 @@ async function saveVoyage() {
             modal.hide();
             form.reset();
             ShipManager.populateSelector('#createVoyageModal select[name="shipId"]');
+            PortManager.populateSelector('#createVoyageModal select[name="departurePortId"]');
+            PortManager.populateSelector('#createVoyageModal select[name="arrivalPortId"]');
             BerthManager.populateSelector('#createVoyageModal select[name="assignedBerthId"]');
             if (voyageTableInstance) await voyageTableInstance.loadVoyages();
         } else {
@@ -269,13 +318,13 @@ function openEditModal(voyage) {
     const form = document.getElementById('editVoyageForm');
     form.querySelector('[name="voyageNumber"]').value = voyage.voyageNumber || '';
     form.querySelector('[name="shipId"]').value = voyage.shipId || '';
-    form.querySelector('[name="departurePort"]').value = voyage.departurePort || '';
-    form.querySelector('[name="arrivalPort"]').value = voyage.arrivalPort || '';
+    form.querySelector('[name="departurePortId"]').value = voyage.departurePortId || '';
+    form.querySelector('[name="arrivalPortId"]').value = voyage.arrivalPortId || '';
     form.querySelector('[name="plannedDeparture"]').value = formatDateTimeForInput(voyage.plannedDeparture);
     form.querySelector('[name="plannedArrival"]').value = formatDateTimeForInput(voyage.plannedArrival);
     form.querySelector('[name="actualDeparture"]').value = formatDateTimeForInput(voyage.actualDeparture);
     form.querySelector('[name="actualArrival"]').value = formatDateTimeForInput(voyage.actualArrival);
-    form.querySelector('[name="voyageStatus"]').value = voyage.voyageStatus || 'PLANNED';
+    form.querySelector('[name="voyageStatus"]').value = voyage.voyageStatus || 'SCHEDULED';
     form.querySelector('[name="assignedBerthId"]').value = voyage.assignedBerthId || '';
     
     const modal = new bootstrap.Modal(document.getElementById('editVoyageModal'));
@@ -289,8 +338,8 @@ async function updateVoyage() {
     const formData = {
         voyageNumber: form.querySelector('[name="voyageNumber"]').value.trim(),
         shipId: parseInt(form.querySelector('[name="shipId"]').value),
-        departurePort: form.querySelector('[name="departurePort"]').value.trim(),
-        arrivalPort: form.querySelector('[name="arrivalPort"]').value.trim(),
+        departurePortId: parseInt(form.querySelector('[name="departurePortId"]').value),
+        arrivalPortId: parseInt(form.querySelector('[name="arrivalPortId"]').value),
         plannedDeparture: formatDateTimeForBackend(form.querySelector('[name="plannedDeparture"]').value),
         plannedArrival: formatDateTimeForBackend(form.querySelector('[name="plannedArrival"]').value),
         actualDeparture: formatDateTimeForBackend(form.querySelector('[name="actualDeparture"]').value),
@@ -299,7 +348,7 @@ async function updateVoyage() {
         assignedBerthId: form.querySelector('[name="assignedBerthId"]').value || null
     };
 
-    if (!formData.voyageNumber || !formData.shipId || !formData.departurePort || !formData.arrivalPort || !formData.plannedDeparture || !formData.plannedArrival) {
+    if (!formData.voyageNumber || !formData.shipId || !formData.departurePortId || !formData.arrivalPortId || !formData.plannedDeparture || !formData.plannedArrival) {
         alert('请填写所有必填项！');
         return;
     }
@@ -359,6 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
         ShipManager.loadShips(),
         BerthManager.loadBerths(),
+        PortManager.loadPorts(),
         voyageTableInstance.loadVoyages()
     ]);
     
@@ -366,6 +416,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     ShipManager.populateSelector('#createVoyageModal select[name="shipId"]');
     ShipManager.populateSelector('#editVoyageModal select[name="shipId"]');
     ShipManager.populateSelector('#filterPanel select[name="filterShip"]');
+    PortManager.populateSelector('#createVoyageModal select[name="departurePortId"]');
+    PortManager.populateSelector('#createVoyageModal select[name="arrivalPortId"]');
+    PortManager.populateSelector('#editVoyageModal select[name="departurePortId"]');
+    PortManager.populateSelector('#editVoyageModal select[name="arrivalPortId"]');
     BerthManager.populateSelector('#createVoyageModal select[name="assignedBerthId"]');
     BerthManager.populateSelector('#editVoyageModal select[name="assignedBerthId"]');
     

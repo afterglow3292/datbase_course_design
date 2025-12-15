@@ -103,7 +103,7 @@
                 <label class="form-label">状态</label>
                 <select class="form-select" name="filterStatus">
                     <option value="">全部</option>
-                    <option value="PLANNED">计划中</option>
+                    <option value="SCHEDULED">计划中</option>
                     <option value="IN_PROGRESS">进行中</option>
                     <option value="COMPLETED">已完成</option>
                     <option value="CANCELLED">已取消</option>
@@ -151,11 +151,15 @@
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <label class="form-label">出发港口 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="departurePort" placeholder="如：上海港" required>
+                            <select class="form-select" name="departurePortId" required>
+                                <option value="">请选择港口</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">到达港口 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="arrivalPort" placeholder="如：宁波港" required>
+                            <select class="form-select" name="arrivalPortId" required>
+                                <option value="">请选择港口</option>
+                            </select>
                         </div>
                     </div>
                     <div class="row g-3 mt-1">
@@ -172,7 +176,7 @@
                         <div class="col-md-6">
                             <label class="form-label">状态</label>
                             <select class="form-select" name="voyageStatus">
-                                <option value="PLANNED" selected>计划中</option>
+                                <option value="SCHEDULED" selected>计划中</option>
                                 <option value="IN_PROGRESS">进行中</option>
                                 <option value="COMPLETED">已完成</option>
                                 <option value="CANCELLED">已取消</option>
@@ -220,11 +224,15 @@
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
                             <label class="form-label">出发港口 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="departurePort" required>
+                            <select class="form-select" name="departurePortId" required>
+                                <option value="">请选择港口</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">到达港口 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="arrivalPort" required>
+                            <select class="form-select" name="arrivalPortId" required>
+                                <option value="">请选择港口</option>
+                            </select>
                         </div>
                     </div>
                     <div class="row g-3 mt-1">
@@ -251,7 +259,7 @@
                         <div class="col-md-6">
                             <label class="form-label">状态</label>
                             <select class="form-select" name="voyageStatus">
-                                <option value="PLANNED">计划中</option>
+                                <option value="SCHEDULED">计划中</option>
                                 <option value="IN_PROGRESS">进行中</option>
                                 <option value="COMPLETED">已完成</option>
                                 <option value="CANCELLED">已取消</option>
