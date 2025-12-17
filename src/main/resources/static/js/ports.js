@@ -27,8 +27,8 @@
             const response = await fetch(API_BASE);
             if (!response.ok) throw new Error('加载失败');
             allPorts = await response.json();
-            renderPorts(allPorts);
-            populateCountryFilter();
+            renderPorts(allPorts);// 渲染港口列表
+            populateCountryFilter();// 填充国家筛选下拉框
         } catch (error) {
             console.error('加载港口失败:', error);
             showToast('加载港口失败', 'danger');

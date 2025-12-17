@@ -2,6 +2,48 @@
 // 仓库管理 - warehouses.js
 // ============================================
 
+// 港口数据管理
+const PortManager = {
+    ports: [],
+    loaded: false,
+
+    async loadPorts() {
+        if (this.loaded) return this.ports;
+        try {
+            const response = await fetch('/api/ports');
+            if (!response.ok) throw new Error('加载港口失败');
+            this.ports = await response.json();
+            this.loaded = true;
+            return this.ports;
+        } catch (error) {
+            console.error('加载港口列表失败：', error);
+            return [];
+        }
+    },
+
+    getPortName(portId) {
+        if (portId == null || portId === 0) return '未指定';
+        const port = this.ports.find(p => p.portId === portId);
+        return port ? port.portName : '未知港口';
+    },
+
+    populateSelector(selector, selectedPortId) {
+        const selectElement = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!selectElement) return;
+        
+        selectElement.innerHTML = '<option value="">请选择港口</option>';
+        this.ports.forEach(port => {
+            const option = document.createElement('option');
+            option.value = port.portId;
+            option.textContent = `${port.portCode} · ${port.portName}`;
+            if (selectedPortId && parseInt(selectedPortId) === port.portId) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    }
+};
+
 class WarehouseTable {
     constructor(selector) {
         this.endpoint = '/api/warehouses';
@@ -37,6 +79,8 @@ class WarehouseTable {
 
         warehouses.forEach(item => {
             const usageRate = this.calculateUsageRate(item);
+            const portName = PortManager.getPortName(item.portId);
+            const locationDisplay = item.location ? `${portName} · ${item.location}` : portName;
             const row = document.createElement('tr');
             row.dataset.warehouseId = item.warehouseId;
             row.innerHTML = `
@@ -46,7 +90,7 @@ class WarehouseTable {
                 <td>${this.formatNumber(item.totalCapacity)}</td>
                 <td>${this.formatNumber(item.usedCapacity)}</td>
                 <td>${this.renderUsageRate(usageRate)}</td>
-                <td>${item.location ?? '-'}</td>
+                <td>${locationDisplay}</td>
             `;
 
             const actionCell = document.createElement('td');
@@ -137,16 +181,23 @@ let currentEditingId = null;
 // 创建仓库
 async function saveWarehouse() {
     const form = document.getElementById('createWarehouseForm');
+    const portIdValue = form.querySelector('[name="portId"]').value;
     const formData = {
         warehouseName: form.querySelector('[name="warehouseName"]').value.trim(),
         warehouseType: form.querySelector('[name="warehouseType"]').value,
         totalCapacity: parseFloat(form.querySelector('[name="totalCapacity"]').value) || 0,
         usedCapacity: parseFloat(form.querySelector('[name="usedCapacity"]').value) || 0,
+        portId: portIdValue ? parseInt(portIdValue) : null,
         location: form.querySelector('[name="location"]').value.trim()
     };
 
     if (!formData.warehouseName || !formData.warehouseType || formData.totalCapacity <= 0) {
         alert('请填写仓库名称、类型和总容量！');
+        return;
+    }
+    
+    if (!formData.portId) {
+        alert('请选择所属港口！');
         return;
     }
 
@@ -182,6 +233,9 @@ function openEditModal(warehouse) {
     form.querySelector('[name="usedCapacity"]').value = warehouse.usedCapacity || 0;
     form.querySelector('[name="location"]').value = warehouse.location || '';
     
+    // 填充港口选择器并选中当前港口
+    PortManager.populateSelector('#editPortSelect', warehouse.portId);
+    
     const modal = new bootstrap.Modal(document.getElementById('editWarehouseModal'));
     modal.show();
 }
@@ -190,16 +244,23 @@ function openEditModal(warehouse) {
 async function updateWarehouse() {
     if (!currentEditingId) return;
     const form = document.getElementById('editWarehouseForm');
+    const portIdValue = form.querySelector('[name="portId"]').value;
     const formData = {
         warehouseName: form.querySelector('[name="warehouseName"]').value.trim(),
         warehouseType: form.querySelector('[name="warehouseType"]').value,
         totalCapacity: parseFloat(form.querySelector('[name="totalCapacity"]').value) || 0,
         usedCapacity: parseFloat(form.querySelector('[name="usedCapacity"]').value) || 0,
+        portId: portIdValue ? parseInt(portIdValue) : null,
         location: form.querySelector('[name="location"]').value.trim()
     };
 
     if (!formData.warehouseName || !formData.warehouseType || formData.totalCapacity <= 0) {
         alert('请填写仓库名称、类型和总容量！');
+        return;
+    }
+    
+    if (!formData.portId) {
+        alert('请选择所属港口！');
         return;
     }
 
@@ -248,6 +309,13 @@ async function deleteWarehouse(warehouseId) {
 // 页面初始化
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('仓库管理页面初始化...');
+    
+    // 先加载港口数据
+    await PortManager.loadPorts();
+    console.log('港口数据加载完成，数量：', PortManager.ports.length);
+    
+    // 填充创建表单的港口选择器
+    PortManager.populateSelector('#createPortSelect');
     
     warehouseTableInstance = new WarehouseTable('#warehouseTable');
     await warehouseTableInstance.loadWarehouses();

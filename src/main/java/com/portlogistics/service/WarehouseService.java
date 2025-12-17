@@ -55,6 +55,9 @@ public class WarehouseService {
         if (warehouse.getWarehouseType() == null || warehouse.getWarehouseType().trim().isEmpty()) {
             throw new IllegalArgumentException("仓库类型不能为空");
         }
+        if (warehouse.getPortId() == null || warehouse.getPortId() <= 0) {
+            throw new IllegalArgumentException("必须选择所属港口");
+        }
         if (warehouse.getTotalCapacity() == null || warehouse.getTotalCapacity().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("总容量必须大于0");
         }
