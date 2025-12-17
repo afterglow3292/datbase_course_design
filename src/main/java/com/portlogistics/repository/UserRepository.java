@@ -12,7 +12,6 @@ public class UserRepository {
 
     private static final String SELECT_BY_USERNAME = "SELECT user_id, username, password, role, created_at FROM user WHERE username = ?";
     private static final String INSERT = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
-
     public UserRepository(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
     }

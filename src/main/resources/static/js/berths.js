@@ -69,7 +69,7 @@ const ShipManager = {
 
     // 根据ID获取船舶名称
     getShipName(shipId) {
-        if (shipId == null || shipId === 0) return '无船舶';
+        if (shipId == null || shipId === 0) return null; // 返回null表示无船舶
         const ship = this.ships.find(s => s.id === shipId);
         return ship ? ship.name : '未知船舶';
     },
@@ -81,7 +81,7 @@ const ShipManager = {
             : selector;
         if (!selectElement) return;
 
-        selectElement.innerHTML = '<option value="">请选择船舶</option>';
+        selectElement.innerHTML = '<option value="">无船舶（空闲泊位）</option>';
         this.ships.forEach(ship => {
             const option = document.createElement('option');
             option.value = ship.id;
@@ -114,14 +114,17 @@ const FormManager = {
 
     // 表单验证
     validateForm(formData) {
-        if (!formData.shipId || isNaN(formData.shipId) || formData.shipId <= 0) {
-            return { valid: false, message: '请选择船舶！' };
-        }
         if (!formData.berthNumber || formData.berthNumber.trim() === '') {
             return { valid: false, message: '请填写泊位编号！' };
         }
-        if (!formData.arrivalTime) {
-            return { valid: false, message: '请填写计划到港时间！' };
+        // 如果状态是占用中，则必须选择船舶
+        if (formData.status === 'OCCUPIED') {
+            if (!formData.shipId || isNaN(formData.shipId) || formData.shipId <= 0) {
+                return { valid: false, message: '占用状态必须选择船舶！' };
+            }
+            if (!formData.arrivalTime) {
+                return { valid: false, message: '占用状态必须填写到港时间！' };
+            }
         }
         return { valid: true };
     },
@@ -161,27 +164,29 @@ const FormManager = {
     // 收集创建表单数据
     collectCreateFormData() {
         const form = document.querySelector('#createBerthModal form');
+        const shipIdValue = form.querySelector('select[name="shipId"]').value;
         return {
             portId: parseInt(form.querySelector('select[name="portId"]').value) || 1,
-            shipId: parseInt(form.querySelector('select[name="shipId"]').value),
+            shipId: shipIdValue ? parseInt(shipIdValue) : 0, // 空值时为0
             berthNumber: form.querySelector('input[name="berthNumber"]').value.trim(),
             arrivalTime: this.formatDateTimeForBackend(form.querySelector('input[name="arrivalTime"]').value),
             departureTime: this.formatDateTimeForBackend(form.querySelector('input[name="departureTime"]').value),
-            status: form.querySelector('select[name="status"]').value || 'PLANNED'
+            status: form.querySelector('select[name="status"]').value || 'AVAILABLE'
         };
     },
 
     // 收集编辑表单数据
     collectEditFormData() {
         const form = document.querySelector('#editBerthModal form');
+        const shipIdValue = form.querySelector('select[name="shipId"]').value;
         return {
             id: parseInt(form.dataset.scheduleId),
             portId: parseInt(form.querySelector('select[name="portId"]').value) || 1,
-            shipId: parseInt(form.querySelector('select[name="shipId"]').value),
+            shipId: shipIdValue ? parseInt(shipIdValue) : 0, // 空值时为0
             berthNumber: form.querySelector('input[name="berthNumber"]').value.trim(),
             arrivalTime: this.formatDateTimeForBackend(form.querySelector('input[name="arrivalTime"]').value),
             departureTime: this.formatDateTimeForBackend(form.querySelector('input[name="departureTime"]').value),
-            status: form.querySelector('select[name="status"]').value || 'PLANNED'
+            status: form.querySelector('select[name="status"]').value || 'AVAILABLE'
         };
     }
 };
@@ -252,7 +257,7 @@ class BerthTable {
             row.innerHTML = `
                 <td class="text-muted">${item.id ?? item.berthId ?? '-'}</td>
                 <td><span class="badge bg-primary-subtle text-primary">${portName}</span></td>
-                <td class="fw-semibold">${this.resolveShip(item)}</td>
+                <td>${this.resolveShip(item)}</td>
                 <td>${item.berthNumber ?? '-'}</td>
                 <td>${this.formatDate(item.arrivalTime)}</td>
                 <td>${this.formatDate(item.departureTime)}</td>
@@ -284,20 +289,31 @@ class BerthTable {
 
     renderStatus(status) {
         const map = {
+            // 泊位状态
+            AVAILABLE: '<span class="badge bg-success-subtle text-success">空闲</span>',
+            OCCUPIED: '<span class="badge bg-primary-subtle text-primary">占用中</span>',
+            MAINTENANCE: '<span class="badge bg-warning-subtle text-warning">维护中</span>',
+            // 排程状态
             CONFIRMED: '<span class="badge bg-success-subtle text-success">已确认</span>',
-            PLANNED: '<span class="badge bg-info-subtle text-info">计划</span>',
-            DELAYED: '<span class="badge bg-warning-subtle text-warning">延迟</span>'
+            PLANNED: '<span class="badge bg-info-subtle text-info">计划中</span>',
+            DELAYED: '<span class="badge bg-danger-subtle text-danger">延迟</span>',
+            CANCELLED: '<span class="badge bg-secondary">已取消</span>'
         };
-        return map[status] || status || '-';
+        return map[status] || `<span class="badge bg-secondary">${status || '-'}</span>`;
     }
 
     resolveShip(item) {
         // 优先使用后端返回的shipName
         if (item.shipName) {
-            return item.shipName;
+            return `<span class="fw-semibold text-primary">${item.shipName}</span>`;
         }
         // 备用：通过ShipManager获取
-        return ShipManager.getShipName(item.shipId);
+        const shipName = ShipManager.getShipName(item.shipId);
+        if (shipName) {
+            return `<span class="fw-semibold text-primary">${shipName}</span>`;
+        }
+        // 无船舶时显示空闲状态
+        return '<span class="text-muted fst-italic">空闲</span>';
     }
 
     formatDate(dateTime) {

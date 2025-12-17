@@ -26,7 +26,7 @@ public  class DatabaseManager {
     //private static final DatabaseManager INSTANCE = new DatabaseManager();
    // private final Properties properties = new Properties();
     
-    @PostConstruct
+    @PostConstruct  //在构造函数执行完，并且所有@Value属性都注入好之后，立刻执行这个方法
     public void init() throws ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
     }

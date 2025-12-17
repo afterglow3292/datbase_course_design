@@ -97,7 +97,39 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <div class="text-muted small"></div>
+        <form id="cargoFilterForm">
+            <div class="mb-3">
+                <label class="form-label">分配状态</label>
+                <select class="form-select" name="filterStatus">
+                    <option value="">全部</option>
+                    <option value="assigned">已分配</option>
+                    <option value="unassigned">待分配</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">所属船舶</label>
+                <select class="form-select" name="filterShip" id="filterShipSelect">
+                    <option value="">全部</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">目的地</label>
+                <input type="text" class="form-control" name="filterDestination" placeholder="输入目的地">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">重量范围 (吨)</label>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <input type="number" class="form-control" name="filterWeightMin" placeholder="最小" step="0.1" min="0">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" class="form-control" name="filterWeightMax" placeholder="最大" step="0.1" min="0">
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary w-100" id="applyCargoFilterBtn">应用筛选</button>
+            <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="clearCargoFilterBtn">清除筛选</button>
+        </form>
     </div>
 </div>
 

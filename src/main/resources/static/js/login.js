@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const toggleLink = document.getElementById('toggleLink');
+    const toggleLink = document.getElementById('toggleLink');//“去注册”或“去登录”的链接）的点击事件
     const toggleText = document.getElementById('toggleText');
     const errorAlert = document.getElementById('errorAlert');
     const successAlert = document.getElementById('successAlert');
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
-                
+
                 const result = await response.json();
                 
                 if (result.success) {

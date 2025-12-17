@@ -55,10 +55,20 @@ public class BerthScheduleRepository {
             // 参数顺序：berth_number, port_id, current_vessel_id, arrival_time, departure_time, status
             stmt.setString(1, schedule.getBerthNumber());           // berth_number
             stmt.setInt(2, schedule.getPortId() > 0 ? schedule.getPortId() : 1); // port_id，默认1
-            stmt.setInt(3, schedule.getShipId());                   // current_vessel_id
-            stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime())); // arrival_time
+            // current_vessel_id 可以为空
+            if (schedule.getShipId() > 0) {
+                stmt.setInt(3, schedule.getShipId());
+            } else {
+                stmt.setNull(3, java.sql.Types.INTEGER);
+            }
+            // arrival_time 可以为空
+            if (schedule.getArrivalTime() != null) {
+                stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime()));
+            } else {
+                stmt.setNull(4, java.sql.Types.TIMESTAMP);
+            }
             stmt.setTimestamp(5, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null); // departure_time
-            stmt.setString(6, schedule.getStatus());                // status
+            stmt.setString(6, schedule.getStatus() != null ? schedule.getStatus() : "AVAILABLE"); // status
 
             int affectedRows = stmt.executeUpdate();
             System.out.println("Repository执行影响行数：" + affectedRows);
@@ -166,12 +176,22 @@ public class BerthScheduleRepository {
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE)) {
             // UPDATE: current_vessel_id, berth_number, port_id, arrival_time, departure_time, status WHERE berth_id
-            stmt.setInt(1, schedule.getShipId());
+            // current_vessel_id 可以为空
+            if (schedule.getShipId() > 0) {
+                stmt.setInt(1, schedule.getShipId());
+            } else {
+                stmt.setNull(1, java.sql.Types.INTEGER);
+            }
             stmt.setString(2, schedule.getBerthNumber());
             stmt.setInt(3, schedule.getPortId() > 0 ? schedule.getPortId() : 1);
-            stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime()));
+            // arrival_time 可以为空
+            if (schedule.getArrivalTime() != null) {
+                stmt.setTimestamp(4, Timestamp.valueOf(schedule.getArrivalTime()));
+            } else {
+                stmt.setNull(4, java.sql.Types.TIMESTAMP);
+            }
             stmt.setTimestamp(5, schedule.getDepartureTime() != null ? Timestamp.valueOf(schedule.getDepartureTime()) : null);
-            stmt.setString(6, schedule.getStatus());
+            stmt.setString(6, schedule.getStatus() != null ? schedule.getStatus() : "AVAILABLE");
             stmt.setInt(7, schedule.getId());
 
             int affectedRows = stmt.executeUpdate();
